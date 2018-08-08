@@ -4,6 +4,12 @@ const x = ". ";
 const FUTURES = ["Imminent Future", "2100s", "Far Future"];
 const PASTS = ["Prehistoric", "Ancient", "Medieval", "Early Modern", "Industrial Revolution", "1910s", "1930s-1940s", "Cold War", "Present Day"]; 
 
+const NAME_START_IMPERATIVES = ["Watch", "Rule", "Fight"];
+const NAME_START_ADJECTIVES = ["Very British", "Infinite", "Urban"];
+const NAME_STARTS = [NAME_START_ADJECTIVES, NAME_START_IMPERATIVES];
+
+
+
 
 
 const ALL_FACTION_ARCHETYPES = ["Government", "Legislative", "Establishment Opposition", "Radical Opposition", "Outsiders", "Leftists", "Rightists", "Monarchy", "Religion", "Nation", "Corporation"];
@@ -40,7 +46,6 @@ const ALL_FACTION_ARCHETYPES = ["Government", "Legislative", "Establishment Oppo
 			
 				main();
 				
-				// getAndRenderJson();
 			});
 						
 			function main() {
@@ -51,7 +56,9 @@ const ALL_FACTION_ARCHETYPES = ["Government", "Legislative", "Establishment Oppo
 				
 				generateTeams(megagame);
 				
-				$("#output").html(describeMegagame(megagame));
+				generateName(megagame);
+				
+				$("#mainContent").html(describeMegagame(megagame));
 			}
 			
 			// DATA GENERATION FUNCTIONS
@@ -75,6 +82,12 @@ const ALL_FACTION_ARCHETYPES = ["Government", "Legislative", "Establishment Oppo
 				if (mg.hasHeterogenousCoreFactions) {
 					mg.coreFactions = pickFrom(ALL_FACTION_ARCHETYPES, mg.coreFactions);
 				}
+				
+			}
+			
+			function generateName(mg) {
+				
+				
 				
 			}
 			
