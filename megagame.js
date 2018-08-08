@@ -1,6 +1,40 @@
 
-const SETTINGS = ["Contemporary sci-fi", "1940s", "1980s", "Hard sci-fi", "High sci-fi", "Age of Piracy"];
-			
+const x = ". ";
+
+const FUTURES = ["Imminent Future", "2100s", "Far Future"];
+const PASTS = ["Prehistoric", "Ancient", "Medieval", "Early Modern", "Industrial Revolution", "1910s", "1930s-1940s", "Cold War", "Present Day"]; 
+
+
+
+const ALL_FACTION_ARCHETYPES = ["Government", "Legislative", "Establishment Opposition", "Radical Opposition", "Outsiders", "Leftists", "Rightists", "Monarchy", "Religion", "Nation", "Corporation"];
+
+/*
+
+	Faction flavours:
+		
+
+*/
+
+/*
+	Faction descriptions...
+	
+		Coup:
+			Government
+			Establishment-Opposition
+		WTS:
+			Human Nations
+			Alien Factions
+		Civil War:
+			Leftist Belligerent
+			Rightist Belligerent 
+			Monarchy Belligerent
+			Religion Belligerent
+		Horizons:
+			Government
+			Nations
+			Corporations
+
+*/
 			
 			$(document).ready(function(){
 			
@@ -8,14 +42,11 @@ const SETTINGS = ["Contemporary sci-fi", "1940s", "1980s", "Hard sci-fi", "High 
 				
 				// getAndRenderJson();
 			});
-			
-			
-			
+						
 			function main() {
-			
 				
 				var megagame = {};
-				
+			
 				generateSetting(megagame);
 				
 				generateTeams(megagame);
@@ -26,16 +57,24 @@ const SETTINGS = ["Contemporary sci-fi", "1940s", "1980s", "Hard sci-fi", "High 
 			// DATA GENERATION FUNCTIONS
 			
 			function generateSetting(mg) {
+				
+					mg.isFuture = coin();
 					
-					mg.setting = pick(SETTINGS);
+					if (!mg.isFuture) { mg.isFiction = coin(); } else { mg.isFiction = false; }
+					
+					if (mg.isFuture) { mg.era = pick(FUTURES); } else { mg.era = pick(PASTS); }
 					
 				}
 				
 			function generateTeams(mg) {
 				
-				var coreFactions = d(3) + 1;
+				mg.coreFactions = d(3) + 1;
 				
-				mg.coreFactions = coreFactions;
+				mg.hasHeterogenousCoreFactions = true;//coin();
+				
+				if (mg.hasHeterogenousCoreFactions) {
+					mg.coreFactions = pickFrom(ALL_FACTION_ARCHETYPES, mg.coreFactions);
+				}
 				
 			}
 			
@@ -47,14 +86,14 @@ const SETTINGS = ["Contemporary sci-fi", "1940s", "1980s", "Hard sci-fi", "High 
 				
 				description += describeSetting(mg);
 				
-				description += "Core factions = " + mg.coreFactions;
+				description += "There are " + mg.coreFactions + " core factions."
 				
 				return description;
 				
 			}
 			
 			function describeSetting(mg) {
-				return "The game's setting is " + mg.setting + ".";
+				return "The era is " + mg.era + x;
 			}
 				
 				
@@ -63,9 +102,35 @@ const SETTINGS = ["Contemporary sci-fi", "1940s", "1980s", "Hard sci-fi", "High 
 				function pick(a) {
 					return a[Math.floor(Math.random() * a.length)];
 				}
+
+				function pickFrom(a, n) {
+					
+					console.log("Picking " + n);
+					
+					if (n > a.length) {console.log("Not enough entries"); return null;}
+					
+					var workingArray = a;
+					var newArray = [];
+
+					for (i = n; i > 0; i-- ) {
+						console.log("Cycle " + i);
+						
+						var choice = d(i+1) - 1;
+						
+						newArray.push(workingArray[choice]);
+						console.log("Transferring " + workingArray[choice]);
+						workingArray.splice(choice,1);
+					}					
+					
+					return newArray;
+				}
 				
 				function d(n) {
 					return Math.floor(Math.random() * n) + 1;
+				}
+				
+				function coin() {
+					if (Math.round(Math.random()) == 0) {return false;} else {return true;}
 				}
 				
 				
