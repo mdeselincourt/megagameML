@@ -28,6 +28,29 @@ const EXTRA_TEAMTYPES = [
 	{"name" : "Press", "goal" : "to spread the news, but from their own ideological perspective. "}
 ]
 
+/* THERE are two ways to model ideologies. Independent-axes or Interdependent-vertices.
+
+	You can have infinite independent axes. They are clearest displayed as independent trackers, except if there are 2 you 
+could choose a plane.
+	
+	You can have infinite interdependent vertices. You could have this in any (hyper)space but to keep it comprehensible  you 
+will want to limit yourself to a plane.
+	
+	With only one space possible (2D) the degree of interdependence scales directly with the number of vertices.
+	
+	The lowest interdependence example was the ideology triangles in AVBC. This interdependence was low enough that 
+quantisation into hexes "rounded out" some interdependencies.
+	
+	If the layout of the polygon permits it a vertex MAY have an opposite; but if not the only definition of an opposite to a 
+vertex will be the concept of "away from it"
+	
+	// Sane limits are two axes or maybe let's say theoretically SIX vertices (though six evenly distributed concepts will be 
+rare I think!)
+	
+	
+	
+*/
+	
 // Based on Coup
 const MAX_IDEOLOGY_EDGES_NUMBER = 6;
 
@@ -41,7 +64,6 @@ const MAX_IDEOLOGY_EDGES_NUMBER = 6;
 		
 		// WTS
 		
-		
 		// Civil war
 		["Religious", "Secular"], 
 		["Socialist", "Fascist"],
@@ -49,7 +71,7 @@ const MAX_IDEOLOGY_EDGES_NUMBER = 6;
 		// Coup
 		["Liberal", "Traditional"],
 		["Liberal", "Radical"],
-		["Radical", "Liberal"],
+		["Radical", "Traditional"],
 		
 		// - economic
 		["Statist", "Keynesian"],
@@ -60,8 +82,16 @@ const MAX_IDEOLOGY_EDGES_NUMBER = 6;
 		
 		// horizons
 		["Environmentalist", "Industrialist"],
+		
+		// Stellaris, sort of
+		["Democratic", "Authoritarian"],
+		["Xenophobic", "Multicultural"]
 	];
-/*
+
+
+	
+/*********************************************
+
 		["Liberal", "Traditional"],
 		["Liberal", "Conservative"],
 		["Liberal", "Radical"],
@@ -135,7 +165,7 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 				
 				mg.teamTypes = d(4);
 				
-				console.log(mg.teamTypes + " team types");
+				console.log("NOW PICKING " + mg.teamTypes + " team types from CORE_TEAMTYPES");
 				
 				mg.teamTypes = pickFrom(CORE_TEAMTYPES, mg.teamTypes);
 				
@@ -164,22 +194,142 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 				
 			}
 			
+			// This complex function works by choosing a "bag" of possible ideology edges
+			// i.e. (pairs of opposing concepts) then assembling them into 'spaces' which are either
+			// 2D spaces with two independent axes, or 2D polygons where each vertex is an "attractor"
 			function generateIdeologySpaces(mg) {
-				
-				var numIdeologyEdges = d(MAX_IDEOLOGY_EDGES_NUMBER);
-				
-				var ideologySpaces = [];
-				
-				var drainingIdeologyEdges = IDEOLOGICAL_EDGES;
-				
-				// TODO: INCREMENTAL
-				
-				ideologySpaces[0] = pick(drainingIdeologyEdges);
-				
-				console.log("Building " + numIdeologyEdges + " ideology edges");
-				
-			}			
 			
+				var ideologySpaces = [];
+					
+				var bagOfEdges = pickFrom(IDEOLOGICAL_EDGES, d(MAX_IDEOLOGY_EDGES_NUMBER));
+			
+				console.log("Assembling spacs from " + bagOfEdges.length + " edges");
+			
+				// Go through the bag one by one
+				while (bagOfEdges.length > 0) {
+					
+					console.log(" edge bag length remaining: " + bagOfEdges.length);
+				
+					var newSpace = [];
+				
+					// 50% chance: build a new tracker
+					if (coin()) 
+					{
+						console.log(" Building Tracker");
+						var edge = popRandomFrom(bagOfEdges);
+
+						ideologySpaces.push([edge]);
+					}
+					else
+					{
+						// 50% (25%) try to build a grid
+						if (coin()) 
+						{
+							console.log(" Building axes... ");
+						
+							// Pick an Xaxis
+							var xAxis = popRandomFrom(bagOfEdges);
+							var yAxis = null;
+							
+							// Check through the possible Y axes for an INDEPENDENT edge
+							for (candidateY of bagOfEdges)
+							{
+								console.log("Considering " + candidateY + " to oppose " + xAxis);
+								
+								if(!xAxis.includes(candidateY[0]) && !xAxis.includes(candidateY[1])) 
+								{
+									console.log("  Suitable Y axis found!");
+									yAxis = candidateY;
+									break; // Stop looking
+								}
+							}
+							// Handle result of search
+							
+							if (yAxis == null) 
+							{
+								console.log("  No independent Y axis found in remaining bag. Making tracker instead.");
+								// We couldn't find an independent Y axis
+								ideologySpaces.push([xAxis]);
+							}
+							else
+							{
+								console.log("  Assembling space");
+								// Assemble the space
+								ideologySpaces.push([xAxis,yAxis]);
+								bagOfEdges.splice(bagOfEdges.indexOf(yAxis),1);
+							}
+						}
+						else
+						{
+							// Try to assemble a polygon perimeter.
+							// Seeding it with a first edge.
+							console.log("  Attempting to build a new polygon space");
+							var newSpace = [];
+							newSpace.push(popRandomFrom(bagOfEdges));
+
+							// Seeking more edges
+							
+							for (freeEdgeIndex = 0; freeEdgeIndex < 6; freeEdgeIndex++) {
+							
+								// Haven't found another edge yet...
+								var nextEdgeFound = false;
+							
+								console.log("  Seeking next edge after " + freeEdgeIndex);
+							
+								var freeEdge = newSpace[freeEdgeIndex];
+								var freeNode = freeEdge[1];
+								
+								// Search each remainder in the bag for a suitable edge
+								for (candidateNext of bagOfEdges) {
+									
+									console.log("Considering " + candidateNext + " to join to " + freeEdge);
+									
+									if(candidateNext.includes(freeNode)) {
+									
+										// We can add this edge; but which way around?
+										console.log("   Found a suitable edge");
+										
+										nextEdgeFound = true;
+										
+										if (freeNode == candidateNext[0])
+										{
+											// Attach this the right way around
+											newSpace[freeEdge+1] = candidateNext;
+										}
+										else
+										{
+											newSpace[freeEdge+1] = [candidateNext[1],candidateNext[0]];
+										}
+
+										// Remove chosen edge from bag
+										bagOfEdges.splice(bagOfEdges.indexOf(candidateNext),1);
+										
+										break;
+										
+									
+									} // End of if compatible node found
+
+									// If we couldn't find another edge, that's the polygon finished.
+									if (!nextEdgeFound) { break; };
+									
+								} // End of search for next edge
+							
+							
+							
+							ideologySpaces.push(newSpace);
+							
+							} // End of polygon assembly
+								
+						} // End of if-grid-else-polygon
+						
+					}// End of if-tracker-else-space
+				}// End of while bag
+				
+				console.log(ideologySpaces);
+				
+			}// end of GenerateIdeologySpaces
+				
+			///////////////////////////////////
 			// DATA TO DESCRIPTION FUNCTIONS
 			
 			function describeMegagame(mg) {
@@ -204,7 +354,8 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 					// Cooperation
 					ttDesc += "They are ";
 
-					ttDesc += ["rivals, though with some common interests. ", "wary of one another, but willing to strike deals. ", "nominally allies, though with competing agendas. "][mg.teamTypes[tt].cooperationLevel + 1];		
+					ttDesc += ["rivals, though with some common interests. ", "wary of one another, but willing to strike deals. ", "nominally allies, though with competing agendas. "][mg.teamTypes[tt].cooperationLevel + 
+1];		
 					
 					// Markup
 					ttDesc = "<p>" + ttDesc + "</p>";
@@ -236,6 +387,7 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 					return a[Math.floor(Math.random() * a.length)];
 				}
 				
+				
 				function pickAndTransfer(aFrom, aTo, toPick) {
 					
 					var moveIndex = d(aFrom.length - 1);
@@ -250,29 +402,35 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 					aFrom.splice(choice,1);
 					
 				}
+				
 
 				function pickFrom(a, toPick) {
 					
-					console.log("Picking " + toPick);
-					
-					if (toPick > a.length) {console.log(" Not enough entries"); return null;}
+					if (toPick > a.length) {console.log(" Not enough entries in array"); return null;}
 					
 					var drainingArray = a;
 					var fillingArray = [];
 
 					for (leftToPick = toPick; leftToPick > 0; leftToPick-- ) {
-						console.log(" " + leftToPick + " left to pick");
+						//console.log(" " + leftToPick + " left to pick");
 						
 						var choice = d(drainingArray.length) - 1;
 						
 						console.log(" choice is " + choice);
 					
 						fillingArray.push(drainingArray[choice]);
-						console.log("Transferring " + drainingArray[choice]);
+
 						drainingArray.splice(choice,1);
 					}					
 					
 					return fillingArray;
+				}
+				
+				function popRandomFrom(a) {
+					var choice = d(a.length) - 1;
+					var popped = a[choice];
+					a.splice(choice,1);
+					return popped;
 				}
 				
 				function d(n) {
@@ -284,92 +442,6 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 				}
 				
 				
-				
-				/*
-				
-				var AVBC = {
-					"currencies": [
-						{
-							"name": "influence",
-							"type": "valueCards"
-						}
-					],
-					"worldspaces": [
-						{
-							"name": "swingometer",
-							"axes": [
-								{
-									"name": "Labour Swing",
-									"inverse": "Conservative Swing",
-									"length": 18									
-								}
-							]
-						},
-						{
-							"name": "social",
-							"axes": [
-								{
-									"name": "Liberal",
-									"inverse": null,
-									"length": 11
-								},
-								{
-									"name": "Traditional"
-									"inverse": null,
-									"length": 11
-								},
-								{
-									"name": "Radical"
-									"inverse": null,
-									"length": 11
-								}							
-							]
-						},
-						{
-							"name": "Stakeholder Impact",
-							"independentAxes": true,
-							"axes": [
-								{
-									"name": "Party Members"
-									"inverse": null,
-									"length": 40
-									
-								},
-								{
-									"name": "Members of Parliament"
-									"inverse": null,
-									"length": 40
-								},
-								{
-									"name": "Trade Unions",
-									"inverse": null,
-									"length": 40
-								}
-							]
-						}
-					],
-					"acts": [
-						
-					]
-				}
-				
-			}
-			
-			*/
-			
-			/*
-			function getAndRenderJson() {
-				
-				
-				$.get(
-					"https://raw.githubusercontent.com/openfootball/world-cup.json/master/2018/worldcup.json", 
-					function(data, status){ displayData(data) }
-					// Not using status...
-				)
-				
-			};
-			*/
-			
 			function displayData(dataString) {
 
 				var dataObject = JSON.parse(dataString); // turn the retrieved JSON into an object
