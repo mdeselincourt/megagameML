@@ -54,9 +54,9 @@ rare I think!)
 // Based on Coup
 const MAX_IDEOLOGY_EDGES_NUMBER = 6;
 
-// const ALL_FORA = ["Map", "Marketplace", "Diplomatic Forum"];
+const IDEOLOGICAL_EDGES = [ ["A", "B"], ["A", "C"], ["B","C"], ["A","D"], ["B","D"], ["C", "D"]];
 
-
+/*
 	const IDEOLOGICAL_EDGES = [
 		
 		// Generic
@@ -87,6 +87,7 @@ const MAX_IDEOLOGY_EDGES_NUMBER = 6;
 		["Democratic", "Authoritarian"],
 		["Xenophobic", "Multicultural"]
 	];
+*/
 
 
 	
@@ -143,6 +144,7 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 				generateName(megagame);
 
 				generateIdeologySpaces(megagame);
+				
 				
 				$("#mainContent").html(describeMegagame(megagame));
 				
@@ -201,19 +203,25 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 			
 				var ideologySpaces = [];
 					
-				var bagOfEdges = pickFrom(IDEOLOGICAL_EDGES, d(MAX_IDEOLOGY_EDGES_NUMBER));
+				//var bagOfEdges = pickFrom(IDEOLOGICAL_EDGES, d(MAX_IDEOLOGY_EDGES_NUMBER));
+				// var bagOfEdges = pickFrom(IDEOLOGICAL_EDGES, d(MAX_IDEOLOGY_EDGES_NUMBER));
+			
+				// console.warn("Always picking big bag of edges for debugging");
+				var bagOfEdges = IDEOLOGICAL_EDGES;
+			
 			
 				console.log("Assembling spaces from " + bagOfEdges.length + " edges");
 			
 				// Go through the bag one by one
 				while (bagOfEdges.length > 0) {
 					
-					console.log(" edge bag length remaining: " + bagOfEdges.length);
+					console.log(" Next edge... edges remaining in the bag are now: " + bagOfEdges.length);
 				
 					var newSpace = [];
 				
 					// 50% chance: build a new tracker
-					if (coin()) 
+					if (false) 
+					// if (coin());
 					{
 						console.log(" Building Tracker");
 						var edge = popRandomFrom(bagOfEdges);
@@ -287,19 +295,18 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 							
 							for (freeEdgeIndex = 0; freeEdgeIndex < 6; freeEdgeIndex++) {
 							
-							
-								console.log("  Seeking edge to add to polygon after " + freeEdgeIndex);
-							
 								var freeEdge = newSpace["edges"][freeEdgeIndex];
 								var freeNode = freeEdge[1];
-								
-								// Haven't found another edge yet...
+						
+								console.log("  Seeking edge to add to polygon after " + freeEdgeIndex + " (" + freeEdge + ")");
+						
+								// Keep track as we search of whether we've found what we want...
 								var nextEdgeFound = false;
 								
 								// Search each remainder in the bag for a suitable edge
 								for (candidateNext of bagOfEdges) {
 									
-									console.log("  Considering " + candidateNext + " to join to " + freeEdge);
+									console.log("  Considering " + freeEdge + " <--?--< " + candidateNext );
 									
 									if(candidateNext.includes(freeNode)) {
 									
@@ -310,12 +317,14 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 										
 										if (freeNode == candidateNext[0])
 										{
+											console.log("    " + freeEdge + " <--- " + candidateNext);
 											// Attach this the right way around
-											newSpace.edges[freeEdge+1] = candidateNext;
+											newSpace.edges[freeEdgeIndex+1] = candidateNext;
 										}
 										else
 										{
-											newSpace.edges[freeEdge+1] = [candidateNext[1],candidateNext[0]];
+											console.log("    " + freeEdge + " <--- " + candidateNext[1] + "'" + candidateNext[0]);
+											newSpace.edges[freeEdgeIndex+1] = [candidateNext[1],candidateNext[0]];
 										}
 
 										// Remove chosen edge from bag
@@ -333,26 +342,41 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 									
 								} // End of search for a successor edge
 							
-								if (!nextEdgeFound) {
+								console.log("  No longer looking for edges to connect");
+							
+								if (nextEdgeFound) {
 									// Time to end the polygon
 									break;
 								}
 								
+							// Complete configuring the space
+							
+							// Randomise whether this is a scoring space or just a political one
 							newSpace.score = coin();
 								
+							// Store the new space
 							ideologySpaces.push(newSpace);
 							
 							} // End of polygon assembly option.
+							
+							console.log("Finished polygon assembly");
+							
 								
 						} // End of if-grid-else-polygon
 						
+						console.log("Finished multi-edge space generation");
+						
 					}// End of if-tracker-else-space
+					
+					console.log("Finished assembling space");
 					
 					// OK that's the entire bag used up
 					
 				}// End of while bag
 				
-				console.log(ideologySpaces);
+				console.log("Finished bag of edges");
+				
+				mg.ideologySpaces = ideologySpaces;
 				
 			}// end of GenerateIdeologySpaces
 				
