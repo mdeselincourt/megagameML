@@ -17,7 +17,7 @@ const CORE_TEAMTYPES = [
 		{"name" : "Political Opposition", "goal" : "to resist or replace those currently in power by essentially non-violent means. "},
 		{"name" : "Sovereign Nation", "goal" : "to pursue their own leaders' agendas. "},
 		{"name" : "Belligerent", "goal" : "to win victory in armed conflict. "},
-		{"name" : "Manipulator", "goal" : "to influence their targets indirectly, by deception, subversion, infiltration or force. "},
+		{"name" : "Manipulator", "goal" : "to influence their targets indirectly, by deception, subversion, infiltration or, as a last resort, force. "},
 		{"name" : "Corporation", "goal" : "to profit and to grow. "},
 		{"name" : "Emergency Service", "goal" : "to serve their civic function without undue cost in money or lives. "},
 		{"name" : "Criminal Band", "goal" : "to serve their leaders' interests in spite of the law. "}
@@ -203,7 +203,7 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 					
 				var bagOfEdges = pickFrom(IDEOLOGICAL_EDGES, d(MAX_IDEOLOGY_EDGES_NUMBER));
 			
-				console.log("Assembling spacs from " + bagOfEdges.length + " edges");
+				console.log("Assembling spaces from " + bagOfEdges.length + " edges");
 			
 				// Go through the bag one by one
 				while (bagOfEdges.length > 0) {
@@ -218,7 +218,10 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 						console.log(" Building Tracker");
 						var edge = popRandomFrom(bagOfEdges);
 
-						ideologySpaces.push([edge]);
+						var space = { "edges": [edge] };
+						space.score = coin();
+						
+						ideologySpaces.push(space);
 					}
 					else
 					{
@@ -234,13 +237,17 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 							// Check through the possible Y axes for an INDEPENDENT edge
 							for (candidateY of bagOfEdges)
 							{
-								console.log("Considering " + candidateY + " to oppose " + xAxis);
+								console.log("   Considering " + candidateY + " to oppose " + xAxis);
 								
 								if(!xAxis.includes(candidateY[0]) && !xAxis.includes(candidateY[1])) 
 								{
 									console.log("  Suitable Y axis found!");
 									yAxis = candidateY;
 									break; // Stop looking
+								}
+								else
+								{
+									console.log("   no... next...");
 								}
 							}
 							// Handle result of search
@@ -249,13 +256,22 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 							{
 								console.log("  No independent Y axis found in remaining bag. Making tracker instead.");
 								// We couldn't find an independent Y axis
-								ideologySpaces.push([xAxis]);
+								
+								var n = {"edges" : [xAxis]}
+								n.score = coin();
+								
+								ideologySpaces.push(n);
 							}
 							else
 							{
 								console.log("  Assembling space");
 								// Assemble the space
-								ideologySpaces.push([xAxis,yAxis]);
+								var n = {};
+								n["edges"] = [xAxis,yAxis];
+								n["score"] = coin();
+								
+								ideologySpaces.push(n);
+																
 								bagOfEdges.splice(bagOfEdges.indexOf(yAxis),1);
 							}
 						}
@@ -264,25 +280,26 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 							// Try to assemble a polygon perimeter.
 							// Seeding it with a first edge.
 							console.log("  Attempting to build a new polygon space");
-							var newSpace = [];
-							newSpace.push(popRandomFrom(bagOfEdges));
+							var newSpace = { "edges" : [] };
+							newSpace["edges"].push(popRandomFrom(bagOfEdges));
 
 							// Seeking more edges
 							
 							for (freeEdgeIndex = 0; freeEdgeIndex < 6; freeEdgeIndex++) {
 							
+							
+								console.log("  Seeking edge to add to polygon after " + freeEdgeIndex);
+							
+								var freeEdge = newSpace["edges"][freeEdgeIndex];
+								var freeNode = freeEdge[1];
+								
 								// Haven't found another edge yet...
 								var nextEdgeFound = false;
-							
-								console.log("  Seeking next edge after " + freeEdgeIndex);
-							
-								var freeEdge = newSpace[freeEdgeIndex];
-								var freeNode = freeEdge[1];
 								
 								// Search each remainder in the bag for a suitable edge
 								for (candidateNext of bagOfEdges) {
 									
-									console.log("Considering " + candidateNext + " to join to " + freeEdge);
+									console.log("  Considering " + candidateNext + " to join to " + freeEdge);
 									
 									if(candidateNext.includes(freeNode)) {
 									
@@ -294,35 +311,45 @@ const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British C
 										if (freeNode == candidateNext[0])
 										{
 											// Attach this the right way around
-											newSpace[freeEdge+1] = candidateNext;
+											newSpace.edges[freeEdge+1] = candidateNext;
 										}
 										else
 										{
-											newSpace[freeEdge+1] = [candidateNext[1],candidateNext[0]];
+											newSpace.edges[freeEdge+1] = [candidateNext[1],candidateNext[0]];
 										}
 
 										// Remove chosen edge from bag
 										bagOfEdges.splice(bagOfEdges.indexOf(candidateNext),1);
 										
-										break;
+										// We can stop searching for a child!
+										break; 
 										
+									}
+									else
+									{
+										console.log("   Cannot add this edge");
+										// This edge cannot be added.
+									}
 									
-									} // End of if compatible node found
-
-									// If we couldn't find another edge, that's the polygon finished.
-									if (!nextEdgeFound) { break; };
-									
-								} // End of search for next edge
+								} // End of search for a successor edge
 							
-							
-							
+								if (!nextEdgeFound) {
+									// Time to end the polygon
+									break;
+								}
+								
+							newSpace.score = coin();
+								
 							ideologySpaces.push(newSpace);
 							
-							} // End of polygon assembly
+							} // End of polygon assembly option.
 								
 						} // End of if-grid-else-polygon
 						
 					}// End of if-tracker-else-space
+					
+					// OK that's the entire bag used up
+					
 				}// End of while bag
 				
 				console.log(ideologySpaces);
