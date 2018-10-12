@@ -576,10 +576,12 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 				{					
 					var space = mg.ideologySpaces[i];
 			
+					console.log("Drawing space " + i + ", JSON:");
+			
 					console.log(space);
 					
 					// Add canvases to the page
-					console.log("Creating dynamicCanvas" + i);
+					console.log(" Creating dynamicCanvas" + i);
 					var newCanvas = document.createElement('canvas'); // This is the element tag itself
 					newCanvas.id = 'dynamicCanvas' + i;
 					document.getElementById('mainContent').appendChild(newCanvas); // adds the canvas to #someBox
@@ -588,21 +590,20 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 					
 					if (space.geometry == "grid")
 					{
-						console.warn("Grid rendering not working...");
+									
+						var ctx = document.getElementById(newCanvas.id).getContext("2d"); // ctx is the suggested variable name for the canvas reference
 						
-						var data = {}; // Start building data object
-						data.xLabels = ["X1","X2"];
-						data.yLabels = ["Y1","Y2"];
-						//data.xLabels = space.edges[0];
-						//data.yLabels = space.edges[1];
-						data.datasets = [];
-						
-						var ctx = document.getElementById(newCanvas.id); // ctx is the suggested variable name for the canvas reference
-						
-						var options = {
-							responsive: true,
+						var myLineChart = new Chart(ctx, {
+						  type: 'line',
+						  data: {
+							xLabels: space.edges[0],
+							yLabels: space.edges[1],
+							datasets: []
+						  },
+						  options: {
+							responsive: false,
 							title:{
-							  display: true,
+							  display: false,
 							  text: 'Chart title text'
 							},
 							legend: {
@@ -629,19 +630,14 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 								},
 							  }]
 							}
-						};
-						
-						// Build a radar object and put it to the canvas
-						var myLineChart = new Chart(ctx, {
-							type: 'line',
-							data: data,
-							options: options
+						  }
 						});
+						
 					}
 					else
 					{
 						
-						console.log("Rendering tracker/polygon");
+						console.log("  Rendering tracker/polygon");
 
 						var vertices = [];
 						
