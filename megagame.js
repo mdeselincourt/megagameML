@@ -15,32 +15,18 @@ const fullstop = ". ";
 
 const NUMBERS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 
+const NAME_START_IMPERATIVES = ["Watch the", "Rule the", "Fight the"];
+const NAME_START_ADJECTIVES = ["A Very British", "Infinite", "Urban", "Dire", "Mirror"];
+const NAME_START_NOUNS = ["Blood and", "Hands of the", "Den of"];
+const NAME_START_NOUN_PREPOSITIONS = ["of the", "and"];
+const NAME_STARTS = [NAME_START_ADJECTIVES, NAME_START_IMPERATIVES];
+const NAME_END_NOUNS = ["Skies", "Nightmare", "Horizons", "Civil War", "Coup", "Thunder", "Straits", "Many", "Shades", "Wolves"];
+// Excluded from generation since these already exist in the real world :)
+const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British Coup", "A Very British Civil War", "Infinite Horizons", "Blood and Thunder", "Dire Straits", "Hands of the Many", "Mirror Shades"];
+
 const FUTURES = ["the Imminent Future", "the Future", "the Far Future"];
 const PASTS = ["Ancient", "Medieval", "Early Modern", "Industrial Revolution", "1910s", "1930s-1940s", "Cold War", "Present Day"]; 
 
-const NAME_START_IMPERATIVES = ["Watch the", "Rule the", "Fight the"];
-const NAME_START_ADJECTIVES = ["A Very British", "Infinite", "Urban", "Dire", "Mirror"];
-const NAME_START_NOUNS = ["Blood and", "Hands of the"];
-const NAME_START_NOUN_PREPOSITIONS = ["of the", "and"];
-const NAME_STARTS = [NAME_START_ADJECTIVES, NAME_START_IMPERATIVES];
-
-const NAME_END_NOUNS = ["Skies", "Nightmare", "Horizons", "Civil War", "Coup", "Thunder", "Straits", "Many", "Shades"];
-
-// Excluded from generation since these already exist
-const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British Coup", "A Very British Civil War", "Infinite Horizons", "Blood and Thunder", "Dire Straits", "Hands of the Many", "Mirror Shades"];
-
-const CORE_TEAMTYPES = [
-		{"name" : "Legislative"},
-		{"name" : "Political Opposition"},
-		{"name" : "Sovereign Nation"},
-		{"name" : "Belligerent"},
-		{"name" : "Manipulator"},
-		{"name" : "Corporation"},
-		{"name" : "Emergency Service"},
-		{"name" : "Criminal Band"},
-		{"name" : "House"}
-	];
-	
 const CORE_TEAMTYPE_DESCRIPTIONS = {
 	"Legislative": "to enact and implement legislation. ",
 	"Political Opposition": "to resist or replace those currently in power by essentially non-violent means. ",
@@ -57,6 +43,11 @@ const EXTRA_TEAMTYPES = [
 	{"name" : "Powerful Backer", "goal" : "to use their great wealth and power to pull strings from behind the scenes, without intervening directly. "},
 	{"name" : "Press", "goal" : "to spread the news, but from their own ideological perspective. "}
 ]
+
+const EPOCHS = [
+		{ name: "Ancient" },
+		{ name: "Modern" }
+	];
 
 /* THERE are two ways to model ideologies. Independent-axes or Interdependent-vertices.
 
@@ -82,59 +73,8 @@ rare I think!)
 // Based on Coup
 const MAX_GAME_IDEOLOGIES_NUMBER = 6;
 
-	// Not sure what these are for...
-	const IDEOLOGIES = [
-		"Pacifist", "Militarist", "Religious", "Secular", "Socialist", "Fascist", "Liberal", "Traditional", "Radical", 
-			"Statist", "Keynesian", "Neoliberal", "Environmentalist", "Industrialist", "Democratic", "Authoritarian",
-			"Xenophobic", "Multicultural", "Protectionist", "Communist", "Monarchist"
-	];
-
-	// Raw material - ideological edges that can be included in the game
-	const IDEOLOGICAL_EDGES = 
-		
-		[
-			// Pacifist-Militarist
-			["Pacifist", "Militarist"],
-			["Pacifist", "Fascist"],
-			
-			["Militarist", "Environmentalist"],
-			["Militarist", "Monarchist"],
-			
-			// Religious
-			["Religious", "Secular"],
-			["Religious", "Radical"],
-			["Religious", "Democratic"],
-			["Religious", "Authoritarian"],
-			["Religious", "Communist"],
-			["Religious", "Monarchist"],
-			
-			//Secular
-			
-			//Socialist
-			["Socialist", "Fascist"],
-			["Socialist", "Industrialist"],
-			["Socialist", "Authoritarian"],
-			["Socialist", "Communist"],
-			["Socialist", "Monarchist"],
-			
-			// Fascist
-			["Fascist", "Liberal"],
-			["Fascist", "Democratic"],
-			["Fascist", "Multicultural"],
-			["Fascist", "Communist"],
-			["Fascist", "Monarchist"],
-			
-			// Authority
-			["Democratic", "Imperial"],
-			
-			// Corporate
-			["Industrial", "Scientific"],
-			["Scientific", "Financial"],
-			["Financial", "Industrial"]
-			
-			// And there can be many more...
-		];
 	
+
 const MECHANICALNESSES = ["Political", "Political-Operational", "Operational"];
 
 const MOODS = ["Comedic", "Light-hearted", "Authentic", "Sombre", "Dark"];
@@ -143,11 +83,10 @@ const RESOURCE_TYPES = ["Currency", "Commodities", "Knowledge", "Influence"];
 
 const RESOURCE_FORM_FACTORS = ["Paper Slips", "Discs", "Cards", "Cubes"];
 
-const MAX_GAME_RESOURCE_QUANTITY_TOTAL = 100;
+const RESOURCE_DYNAMICS = ["Closed", "Finite", "Infinite"];
 
-const MAX_GAME_RESOURCE_QUANTITY_GROWTH = 10;
+const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 
-const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific", "Political"]; 
 
 /*
 	Draw when document is ready	
@@ -162,21 +101,25 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 			// Generate the megagame into a JavaScript Object, then describe that to HTML (and just print it out for reference)
 			function main() {
 				
+				var universe = generateUniverse();
+				
 				var megagame = {};
 			
 				generateName(megagame);
 
-				generateSetting(megagame);
+				generateSetting(megagame, universe);
 				
-				generateTeams(megagame);
+				generateTeams(megagame, universe);
 				
-				generateIdeologySpaces(megagame);
+				generateIdeologySpaces(megagame, universe);
 				
 				generateMapMechanics(megagame);
 				
 				generateMechanicalness(megagame);
 				
 				generateMood(megagame);
+				
+				generateInteractions(megagame, universe);
 				
 				generateEconomy(megagame);
 				
@@ -187,7 +130,89 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 				drawCharts(megagame);
 			}
 			
+			////////////////////////////
 			// DATA GENERATION FUNCTIONS
+			
+			function generateUniverse() {
+				
+				var universe = {};
+				
+				var epoch = d(EPOCHS.length) - 1;
+				
+				for (var step = 0; step <= epoch; step++)
+				{
+					console.log(" epoch " + step);
+					
+					console.error("INCOMPLETE");
+					
+					for (var key in EPOCHS[step])
+					{
+						console.log("  pushing " + key);
+						universe[key].push(EPOCHS[step][key]);
+					}				
+				}
+				
+				universe["coreTeamTypes"] = [
+						{"name" : "Legislative"},
+						{"name" : "Political Opposition"},
+						{"name" : "Sovereign Nation"},
+						{"name" : "Belligerent"},
+						{"name" : "Manipulator"},
+						{"name" : "Corporation"},
+						{"name" : "Emergency Service"},
+						{"name" : "Criminal Band"},
+						{"name" : "House"}
+					];
+				
+				universe["ideologicalEdges"] = 
+				
+				[
+					// Pacifist-Militarist
+					["Pacifist", "Militarist"],
+					["Pacifist", "Fascist"],
+					
+					["Militarist", "Environmentalist"],
+					["Militarist", "Monarchist"],
+					
+					// Religious
+					["Religious", "Secular"],
+					["Religious", "Radical"],
+					["Religious", "Democratic"],
+					["Religious", "Authoritarian"],
+					["Religious", "Communist"],
+					["Religious", "Monarchist"],
+					
+					//Secular
+					
+					//Socialist
+					["Socialist", "Fascist"],
+					["Socialist", "Industrialist"],
+					["Socialist", "Authoritarian"],
+					["Socialist", "Communist"],
+					["Socialist", "Monarchist"],
+					
+					// Fascist
+					["Fascist", "Liberal"],
+					["Fascist", "Democratic"],
+					["Fascist", "Multicultural"],
+					["Fascist", "Communist"],
+					["Fascist", "Monarchist"],
+					
+					// Authority
+					["Democratic", "Imperial"],
+					
+					// Corporate
+					["Industrial", "Scientific"],
+					["Scientific", "Financial"],
+					["Financial", "Industrial"]
+					
+					// And there can be many more...
+				];
+				
+				universe["fora"] = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific", "Political"];
+				
+				return universe;
+			}
 			
 			function generateSetting(mg) {
 				
@@ -199,13 +224,13 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 					
 				}
 				
-			function generateTeams(mg) {
+			function generateTeams(mg, universe) {
 				
 				mg.teamTypes = d(3) + 1;
 				
 				// console.log("NOW PICKING " + mg.teamTypes + " team types from CORE_TEAMTYPES");
 				
-				mg.teamTypes = pickFrom(CORE_TEAMTYPES, mg.teamTypes);
+				mg.teamTypes = pickFrom(universe["coreTeamTypes"], mg.teamTypes);
 				
 				// Iterate through each selected teamType
 				for (teamType of mg.teamTypes)
@@ -252,11 +277,11 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 			//
 			//
 			//
-			function generateIdeologySpaces(mg) {
+			function generateIdeologySpaces(mg, universe) {
 			
 				var ideologySpaces = [];
 					
-				var bagOfEdges = pickFrom(IDEOLOGICAL_EDGES, d(MAX_GAME_IDEOLOGIES_NUMBER));
+				var bagOfEdges = pickFrom(universe["ideologicalEdges"], d(MAX_GAME_IDEOLOGIES_NUMBER));
 			
 				// console.log("Assembling spaces from a bag of " + bagOfEdges.length + " edges");
 			
@@ -454,6 +479,12 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 				
 			}
 			
+			function generateInteractions(mg, universe) {
+				
+				mg.fora = pickSetMinimumLeave(universe["fora"], 2, 0);
+				
+			}
+			
 			function generateEconomy(mg) {
 				
 				var gameResources = [];
@@ -466,11 +497,9 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 					gameResources.push(
 						{
 							"type": gameResourceTypes[i],
-							"form": pick(RESOURCE_FORM_FACTORS) 
-							
-							// "total": d(MAX_GAME_RESOURCE_QUANTITY_TOTAL),
-							// "growth": d(MAX_GAME_RESOURCE_QUANTITY_GROWTH)
-						
+							"form": pick(RESOURCE_FORM_FACTORS),
+							"inputDynamic": pick(RESOURCE_DYNAMICS),
+							"outputDynamic": pick(RESOURCE_DYNAMICS)
 						}
 					);
 						
@@ -504,14 +533,14 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 					mapDesc = "The game map is ";
 					
 					if (mg.openMap) {
-						mapDesc += "accessible";				
+						mapDesc += "used directly by";				
 					}
 					else
 					{
-						mapDesc += "inaccessible";
+						mapDesc += "inaccessible to";
 					}
 				
-				mapDesc = mapDesc + " to the players.";
+				mapDesc = mapDesc + " the players.";
 				}
 				else
 				{
@@ -521,6 +550,8 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 				description += "<p>" + mapDesc + "</p>";
 				
 				// console.log("There are " + mg.teamTypes.length + " types of team.");
+				
+				description += "<h3>Teams</h3>";
 				
 				// Describe team types (and the teams within them)
 				for (tt = 0; tt < mg.teamTypes.length; tt++)
@@ -549,8 +580,16 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 					ttDesc = "<p>" + ttDesc + "</p>";
 					
 					description += ttDesc;
-					
-				}
+				
+					// End of team description
+				} 
+				// End of team descriptions
+				
+				description += describeInteractions(mg);
+				
+				// Describe economy
+				
+				description += describeEconomy(mg);
 				
 				description += "<h2>MegagameML:</h2><p><pre>" + syntaxHighlight(mg) + "</pre></p>";
 				
@@ -558,6 +597,7 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 				
 			}
 			
+			// Describe the era, futureness, fictionness
 			function describeSetting(mg) {
 				var settingDescription = "The era is " 
 				
@@ -569,6 +609,43 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 				
 				return settingDescription;
 			}
+			
+			function describeInteractions(mg) {
+				
+				var desc = "<h3>Gameplay</h3>";
+				
+				var fora = mg.fora;
+				var fn = fora.length;
+				
+				desc += "<p>There " + isAre(fn) + " " + fn + " official form" + s(fn) + " of player interaction, each of which has a corresponding role in most teams:"
+				
+				for (var i = 0; i < fn; i++)
+				{
+					desc += "<li>" + fora[i] + "</li>";
+				}
+				
+				desc += "<p>";
+				
+				return desc;
+				
+			}
+				
+			
+			function describeEconomy(mg) {
+				
+				var economyDescription = "";
+
+				economyDescription += "<h3>Economy</h3>";
+				
+				var rn = mg.resources.length;
+				
+				economyDescription += "<p>There " + isAre(rn) + " " + rn + " type" + s(rn) + " of resource.";
+				
+				console.warn("Economy description incomplete");
+				
+				return economyDescription;
+			}
+			
 				
 			function drawCharts(mg) {
 				
@@ -576,12 +653,11 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 				{					
 					var space = mg.ideologySpaces[i];
 			
-					console.log("Drawing space " + i + ", JSON:");
-			
-					console.log(space);
+					//console.log("Drawing space " + i + ", JSON:");
+					//console.log(space);
 					
 					// Add canvases to the page
-					console.log(" Creating dynamicCanvas" + i);
+					//console.log(" Creating dynamicCanvas" + i);
 					var newCanvas = document.createElement('canvas'); // This is the element tag itself
 					newCanvas.id = 'dynamicCanvas' + i;
 					document.getElementById('mainContent').appendChild(newCanvas); // adds the canvas to #someBox
@@ -636,8 +712,7 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 					}
 					else
 					{
-						
-						console.log("  Rendering tracker/polygon");
+						// console.log("  Rendering tracker/polygon");
 
 						var vertices = [];
 						
@@ -646,7 +721,7 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 						for (var j = 0; j < space.edges.length; j++)
 						{
 							var edge = space.edges[j];
-							console.log(edge[1]);
+							//console.log(edge[1]);
 							vertices.push(edge[1]); // Add the end of each edge
 						}
 						
@@ -751,6 +826,15 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 					return popped;
 				}
 				
+				function pickSetMinimumLeave(superset, min, leave)
+				{
+					range = superset.length - (min + leave);
+					
+					pickLength = min + (d(range+1) - 1);
+						
+					return pickFrom(superset, pickLength);
+				}
+				
 				function d(n) {
 					return Math.floor(Math.random() * n) + 1;
 				}
@@ -771,6 +855,11 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 			function displayObject(obj) {
 				$("#output").html(Object.stringify(obj));
 				
+			}
+			
+			function isAre(n)
+			{
+				if (n == 1) { return "is"; } else { return "are"; }
 			}
 			
 			function s(n)
