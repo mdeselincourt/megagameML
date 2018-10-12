@@ -184,7 +184,7 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 				
 				$("#mainTitle h2").html(megagame.name);
 				
-				drawCharts();
+				drawCharts(megagame);
 			}
 			
 			// DATA GENERATION FUNCTIONS
@@ -203,7 +203,7 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 				
 				mg.teamTypes = d(3) + 1;
 				
-				console.log("NOW PICKING " + mg.teamTypes + " team types from CORE_TEAMTYPES");
+				// console.log("NOW PICKING " + mg.teamTypes + " team types from CORE_TEAMTYPES");
 				
 				mg.teamTypes = pickFrom(CORE_TEAMTYPES, mg.teamTypes);
 				
@@ -258,12 +258,12 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 					
 				var bagOfEdges = pickFrom(IDEOLOGICAL_EDGES, d(MAX_GAME_IDEOLOGIES_NUMBER));
 			
-				console.log("Assembling spaces from a bag of " + bagOfEdges.length + " edges");
+				// console.log("Assembling spaces from a bag of " + bagOfEdges.length + " edges");
 			
 				// Go through the bag one by one, attempting to 
 				while (bagOfEdges.length > 0) {
 					
-					console.log(" Next edge... edges remaining in the bag are now: " + bagOfEdges.length);
+					// console.log(" Next edge... edges remaining in the bag are now: " + bagOfEdges.length);
 				
 					if (coin()) 
 					{
@@ -274,11 +274,11 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 						ideologySpaces.push(buildPolygonSpace(bagOfEdges));
 					}
 						
-					console.log("Finished assembling space");
+					// console.log("Finished assembling space");
 					
 				} // End of while bag
 				
-				console.log("Finished bag of edges"); // So there's no more spaces to be built and we are done.
+				// console.log("Finished bag of edges"); // So there's no more spaces to be built and we are done.
 				
 				mg.ideologySpaces = ideologySpaces;
 				
@@ -295,7 +295,7 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 			
 			// Attempts to build a 2D space of 2 mutually exclusive edges. If it fails to find a second edge it will fall back to a tracker.
 			function buildGridSpace(bagOfEdges) {
-				console.log("buildGridSpace()");
+				// console.log("buildGridSpace()");
 				
 				var newSpace = {"geometry" : "grid"};
 				
@@ -306,17 +306,17 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 				// Check through the possible Y axes for an INDEPENDENT edge
 				for (candidateY of bagOfEdges)
 				{								
-					console.log("   Considering " + candidateY + " to oppose " + xAxis);
+					// console.log("   Considering " + candidateY + " to oppose " + xAxis);
 					
 					if(!xAxis.includes(candidateY[0]) && !xAxis.includes(candidateY[1])) 
 					{
-						console.log("  Suitable Y axis found!");
+						// console.log("  Suitable Y axis found!");
 						yAxis = candidateY;
 						break; // Stop looking
 					}
 					else
 					{
-						console.log("   edge not suitable. Next.");
+						// console.log("   edge not suitable. Next.");
 					}
 				}
 				// Handle result of search
@@ -324,7 +324,7 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 				
 				if (yAxis == null) 
 				{
-					console.log("  No independent Y axis found in remaining bag. Making this a tracker instead.");
+					// console.log("  No independent Y axis found in remaining bag. Making this a tracker instead.");
 					// We couldn't find an independent Y axis
 					
 					newSpace = {"geometry": "tracker", "edges" : [xAxis]}
@@ -342,7 +342,7 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 			}
 			
 			function buildPolygonSpace(bagOfEdges) {
-				console.log("buildPolygonSpace()");
+				// console.log("buildPolygonSpace()");
 				
 				// Try to assemble a polygon perimeter.
 				
@@ -358,42 +358,42 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 				
 				for (freeEdgeIndex = 0; freeEdgeIndex < 6; freeEdgeIndex++) {
 				
-					console.log("  Seeking edge to add to polygon after [" + freeEdgeIndex + "] of up to [5]");
+					// console.log("  Seeking edge to add to polygon after [" + freeEdgeIndex + "] of up to [5]");
 				
 					var freeEdge = newSpace["edges"][freeEdgeIndex]; // Get a reference to the free edge
 
-					console.log("   free edge is now " + freeEdge);
+					// console.log("   free edge is now " + freeEdge);
 
 					var freeNode = freeEdge[1]; // Get a reference to the free edge's free node
 					
-					console.log("  ([" + freeEdgeIndex + "] of " + newSpace["edges"].length + ")");
+					// console.log("  ([" + freeEdgeIndex + "] of " + newSpace["edges"].length + ")");
 			
 					// Keep track as we search of whether we've found what we want...
 					var nextEdgeFound = false;
 					
-					console.log("  Starting to iterate through bag of " + bagOfEdges.length + " remaining edges"); 
+					// console.log("  Starting to iterate through bag of " + bagOfEdges.length + " remaining edges"); 
 					
 					// Search each remainder in the bag for a suitable edge to add
 					for (candidateNext of bagOfEdges) {
 						
-						console.log("  Considering " + freeEdge + " <--?--< " + candidateNext + " from a bag of " + bagOfEdges.length);
+						// console.log("  Considering " + freeEdge + " <--?--< " + candidateNext + " from a bag of " + bagOfEdges.length);
 						
 						if(candidateNext.includes(freeNode)) {
 						
 							// We can add this edge; but which way around?
-							console.log("   Found a suitable edge");
+							// console.log("   Found a suitable edge");
 							
 							nextEdgeFound = true;
 							
 							if (freeNode == candidateNext[0])
 							{
-								console.log("    " + freeEdge + " <--- " + candidateNext);
+								// console.log("    " + freeEdge + " <--- " + candidateNext);
 								// Attach this the right way around
 								newSpace.edges[freeEdgeIndex+1] = candidateNext;
 							}
 							else
 							{
-								console.log("    " + freeEdge + " <--- " + candidateNext[1] + "'" + candidateNext[0]);
+								// console.log("    " + freeEdge + " <--- " + candidateNext[1] + "'" + candidateNext[0]);
 								newSpace.edges[freeEdgeIndex+1] = [candidateNext[1],candidateNext[0]];
 							}
 
@@ -406,19 +406,19 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 						}
 						else
 						{
-							console.log("   Cannot add this edge"); // Because neither of its nodes match the free node.
+							// console.log("   Cannot add this edge"); // Because neither of its nodes match the free node.
 						}
 						
 					} // End of search for a successor edge
 				
-					console.log("Finished going through bag in attempt to add edge " + freeEdgeIndex + ", nextEdgeFound = " + nextEdgeFound);
+					// console.log("Finished going through bag in attempt to add edge " + freeEdgeIndex + ", nextEdgeFound = " + nextEdgeFound);
 					
 					// We are done going through the bag, did we find anything?
 					if (nextEdgeFound == false) { break; }// Do not attempt to find another edge
 					
 				} // End of loop attempting to add another edge
 				
-				console.log("Finished space assembly, setting final properties and pushing");
+				// console.log("Finished space assembly, setting final properties and pushing");
 
 				// Complete configuring the space
 				
@@ -572,21 +572,35 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 				
 			function drawCharts(mg) {
 				
-				//for (space in mg.ideologySpaces) 
-				//{					
+				for (var i = 0; i < mg.ideologySpaces.length; i++) 
+				{					
+					var space = mg.ideologySpaces[i];
+			
+					console.log(space);
 					
 					// Add canvases to the page
-					var newCanvas = document.createElement('canvas1');
-					newCanvas.id = 'canvas1';
+					var newCanvas = document.createElement('canvas'); // This is the element tag itself
+					newCanvas.id = 'dynamicCanvas' + i;
 
 					document.getElementById('mainContent').appendChild(newCanvas); // adds the canvas to #someBox
 					
 					// Draw onto canvas using Charts.js
-					var data = {
-						labels: ["Scientific", "Industrial", "Financial"],
-					};
 					
-					var ctx = document.getElementById("canvas1"); // ctx is the suggested variable name for the canvas reference
+					var vertices = [];
+					
+					vertices.push(space.edges[0][0]); // Start with first end of first edge
+					
+					for (var j = 0; j < space.edges.length; j++)
+					{
+						var edge = space.edges[j];
+						console.log(edge[1]);
+						vertices.push(edge[1]); // Add the end of each edge
+					}
+					
+					var data = {};
+					data.labels = vertices;
+					
+					var ctx = document.getElementById(newCanvas.id); // ctx is the suggested variable name for the canvas reference
 					
 					var options = {
 						responsive: false, // I don't want the canvas to be resized.
@@ -604,15 +618,17 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 							{}
 						}
 					};
+				}
 					
-					var myRadarChart = new Chart(ctx, {
-						type: 'radar',
-						data: data,
-						options: options
-					});
-				//}
+				var myRadarChart = new Chart(ctx, {
+					type: 'radar',
+					data: data,
+					options: options
+				});
+
 			}
 				
+				////////////////////
 				// UTILITY FUNCTIONS
 				
 				function pick(a) {
@@ -624,7 +640,7 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 					
 					var moveIndex = d(aFrom.length - 1);
 					
-					if(toPick > aFrom.length) {console.log(" Not enough entries in aFrom"); return null;}
+					if(toPick > aFrom.length) {console.warn(" Not enough entries in aFrom"); return null;}
 					
 					for (leftToPick = toPick; leftToPick > 0; leftToPick--) {
 						var choice = d(aFrom.length) - 1;
@@ -638,7 +654,7 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 
 				function pickFrom(a, toPick) {
 					
-					if (toPick > a.length) {console.log(" Not enough entries in array"); return null;}
+					if (toPick > a.length) {console.warn(" Not enough entries in array"); return null;}
 					
 					var drainingArray = a;
 					var fillingArray = [];
@@ -662,14 +678,14 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 					
 					if (popRandomFrom.length < 1) { console.severe("Can't pop from empty array"); return null;} 
 					
-					console.log( "Attempting to pop random from " + a);
+					// console.log( "Attempting to pop random from " + a);
 					
 					var choice = d(a.length) - 1;
-					console.log(" Chosen [" + choice + "] of " + a.length + " for random popping");
+					// console.log(" Chosen [" + choice + "] of " + a.length + " for random popping");
 					
 					var popped = a[choice];
 					a.splice(choice,1);
-					console.log(" randomly popping " + popped);
+					// console.log(" randomly popping " + popped);
 					return popped;
 				}
 				
