@@ -515,7 +515,7 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 				}
 				else
 				{
-					mapDesc = "The game has central state trackers, but no map.";
+					mapDesc = "The game has shared game-state trackers, but no map.";
 				}
 				
 				description += "<p>" + mapDesc + "</p>";
@@ -579,54 +579,120 @@ const FORA = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific",
 					console.log(space);
 					
 					// Add canvases to the page
+					console.log("Creating dynamicCanvas" + i);
 					var newCanvas = document.createElement('canvas'); // This is the element tag itself
 					newCanvas.id = 'dynamicCanvas' + i;
-
 					document.getElementById('mainContent').appendChild(newCanvas); // adds the canvas to #someBox
 					
 					// Draw onto canvas using Charts.js
 					
-					var vertices = [];
-					
-					vertices.push(space.edges[0][0]); // Start with first end of first edge
-					
-					for (var j = 0; j < space.edges.length; j++)
+					if (space.geometry == "grid")
 					{
-						var edge = space.edges[j];
-						console.log(edge[1]);
-						vertices.push(edge[1]); // Add the end of each edge
-					}
-					
-					var data = {};
-					data.labels = vertices;
-					
-					var ctx = document.getElementById(newCanvas.id); // ctx is the suggested variable name for the canvas reference
-					
-					var options = {
-						responsive: false, // I don't want the canvas to be resized.
-						scale: {
-							display: true,
-							ticks: {
-								display: false,
-							  // But if you DID show them:
-								beginAtZero: true, // Zero at centre
-								max: 1, // Value of outermost edge
-										maxTicksLimit: 1, // Number of subdivisions/scale lines
-							  stepSize: 1 
+						console.warn("Grid rendering not working...");
+						
+						var data = {}; // Start building data object
+						data.xLabels = ["X1","X2"];
+						data.yLabels = ["Y1","Y2"];
+						//data.xLabels = space.edges[0];
+						//data.yLabels = space.edges[1];
+						data.datasets = [];
+						
+						var ctx = document.getElementById(newCanvas.id); // ctx is the suggested variable name for the canvas reference
+						
+						var options = {
+							responsive: true,
+							title:{
+							  display: true,
+							  text: 'Chart title text'
 							},
-							pointLabels: 
-							{}
-						}
-					};
-				}
-					
-				var myRadarChart = new Chart(ctx, {
-					type: 'radar',
-					data: data,
-					options: options
-				});
+							legend: {
+							  display: false
+							},
+							scales: {
+							  xAxes: [{
+								display: true,
+								scaleLabel: {
+								  display: false,
+								  labelString: 'X axis name'
+								}
+							  }],
+							  yAxes: [{
+								type: 'category',
+								position: 'left',
+								display: true,
+								scaleLabel: {
+								  display: false,
+								  labelString: 'Y axis name'
+								},
+								ticks: {
+								  reverse: true
+								},
+							  }]
+							}
+						};
+						
+						// Build a radar object and put it to the canvas
+						var myLineChart = new Chart(ctx, {
+							type: 'line',
+							data: data,
+							options: options
+						});
+					}
+					else
+					{
+						
+						console.log("Rendering tracker/polygon");
 
-			}
+						var vertices = [];
+						
+						vertices.push(space.edges[0][0]); // Start with first end of first edge
+						
+						for (var j = 0; j < space.edges.length; j++)
+						{
+							var edge = space.edges[j];
+							console.log(edge[1]);
+							vertices.push(edge[1]); // Add the end of each edge
+						}
+						
+						var data = {};
+						data.labels = vertices;
+						
+						var ctx = document.getElementById(newCanvas.id); // ctx is the suggested variable name for the canvas reference
+						
+						var options = {
+							responsive: false, // I don't want the canvas to be resized.
+							scale: {
+								display: true,
+								ticks: {
+									display: false,
+									// But if you DID display ticks in future / in debugging:
+									beginAtZero: true, // Zero at centre
+									max: 1, // Value of outermost edge
+									maxTicksLimit: 1, // Number of subdivisions/scale lines
+								  stepSize: 1 
+								},
+								pointLabels: 
+								{}
+							}
+						};
+						
+						// Build a radar object and put it to the canvas
+						var myRadarChart = new Chart(ctx, {
+							type: 'radar',
+							data: data,
+							options: options
+						});
+
+					// End of polygon/tracker
+					}						
+					
+					// end of this ideology space
+				} 
+				// All ideology spaces drawn				
+					
+				
+
+			} // end of drawCharts
 				
 				////////////////////
 				// UTILITY FUNCTIONS
