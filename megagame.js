@@ -1,17 +1,9 @@
 
 const fullstop = ". ";
 
-// Priorities order
-
-// How many teams of each type
-// Team activities/structure (UN? etc.)
-// More name formats (everybody dies?)
-// Draw?? ideology spaces
-//
-// Simple resources
-//
-// Economy balance
-//
+// for (let i in x) sets i to the numerical? indexes 0 1 2...
+// for (let i of list) sets i to the values 
+// let defines block local scope variable
 
 const NUMBERS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 
@@ -44,9 +36,68 @@ const EXTRA_TEAMTYPES = [
 	{"name" : "Press", "goal" : "to spread the news, but from their own ideological perspective. "}
 ]
 
+// I didn't want to encode any historical knowledge but I kept generating Ancient
+//  settings with Corporation teams and Communist ideology so I did it anyway.
 const EPOCHS = [
-		{ name: "Ancient" },
-		{ name: "Modern" }
+				{ 
+					"name": "Ancient", 
+					"coreTeamTypes": [
+						{"name" : "Legislative"},
+						{"name" : "Political Opposition"},
+						{"name" : "Sovereign Nation"},
+						{"name" : "Belligerent"},
+						{"name" : "Manipulator"},
+						{"name" : "Criminal Band"},
+						{"name" : "House"}
+					],
+					"fora": ["Leadership", "Diplomatic", "Market", "Operational", "Political"],
+					"ideologicalEdges": [
+						["Pacifist", "Militarist"],
+						["Militarist", "Environmentalist"],
+						["Militarist", "Monarchist"],
+						["Religious", "Secular"],
+						["Religious", "Democratic"],
+						["Religious", "Authoritarian"],
+						["Religious", "Monarchist"],
+						["Democratic", "Imperial"]
+						
+					]
+				},
+				{ 
+					"name": "Classical" 
+				},
+				{ 
+					"name": "Medieval" 
+				},
+				{ 
+					"name": "Modern", 
+					"coreTeamTypes": [
+						{"name": "Emergency Service"},
+						{"name": "Corporation"}
+					],
+					"fora": ["Scientific"],
+					"ideologicalEdges": [
+						["Industrial", "Scientific"],
+						["Scientific", "Financial"],
+						["Financial", "Industrial"]
+					]
+				},
+				{ 
+					"name": "20th Century",
+					"ideologicalEdges": [
+						["Pacifict", "Fascist"],
+						["Religious", "Communist"],
+						["Socialist", "Fascist"],
+						["Socialist", "Industrialist"],
+						["Socialist", "Authoritarian"],
+						["Socialist", "Communist"],
+						["Socialist", "Monarchist"],
+						["Fascist", "Liberal"],
+						["Fascist", "Democratic"],
+						["Fascist", "Communist"],
+						["Fascist", "Monarchist"]
+					]
+				}
 	];
 
 /* THERE are two ways to model ideologies. Independent-axes or Interdependent-vertices.
@@ -135,22 +186,44 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 			
 			function generateUniverse() {
 				
-				var universe = {};
+				// Initialise the facets of the universe that the epochs can add to
+				var generatedUniverse = {
+					"coreTeamTypes": [],
+					"ideologicalEdges": [],
+					"fora": []
+				};
 				
-				var epoch = d(EPOCHS.length) - 1;
+				var gameEpochIndex = d(EPOCHS.length) - 1;
 				
-				for (var step = 0; step <= epoch; step++)
+				console.log("Game's epoch index is " + gameEpochIndex);
+				
+				for (var step = 0; step <= gameEpochIndex; step++)
 				{
-					console.log(" epoch " + step);
+					console.log(" step " + step + " of " + gameEpochIndex);
 					
-					console.error("INCOMPLETE");
-					
-					for (var key in EPOCHS[step])
-					{
-						console.log("  pushing " + key);
-						universe[key].push(EPOCHS[step][key]);
-					}				
+					for (let facet in EPOCHS[step]) {
+						console.log("   step " + step + " has facet " + facet + " of value " + EPOCHS[step][facet]);
+						
+						if (facet != "name") {
+							
+							console.log("    concatenating epoch " + step + "'s facet (" + EPOCHS[step][facet] + ") to universe's facet");
+							
+							generatedUniverse[facet] = generatedUniverse[facet].concat(EPOCHS[step][facet]); // Will throw an exception if the "bare" universe lacks this facet to add to! 
+						}
+						else
+						{
+							generatedUniverse["epoch"] = EPOCHS[step][facet];
+						}
+					}
 				}
+				
+				console.log("Dumping GENERATED UNIVERSE:");
+				
+				console.log(generatedUniverse);
+				
+				console.warn("Writing literal universe during generation development.");
+				
+				var universe = {};
 				
 				universe["coreTeamTypes"] = [
 						{"name" : "Legislative"},
@@ -163,9 +236,9 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 						{"name" : "Criminal Band"},
 						{"name" : "House"}
 					];
+					
 				
-				universe["ideologicalEdges"] = 
-				
+				universe["ideologicalEdges"] = 				
 				[
 					// Pacifist-Militarist
 					["Pacifist", "Militarist"],
