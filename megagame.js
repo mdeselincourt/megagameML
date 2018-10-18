@@ -64,10 +64,16 @@ const EPOCHS = [
 					]
 				},
 				{ 
-					"name": "Classical" 
+					"name": "Classical",
+					"coreTeamTypes": [],
+					"fora": [],
+					"ideologicalEdges": []
 				},
 				{ 
-					"name": "Medieval" 
+					"name": "Medieval",
+					"coreTeamTypes": [],
+					"fora": [],
+					"ideologicalEdges": []					
 				},
 				{ 
 					"name": "Modern", 
@@ -84,6 +90,8 @@ const EPOCHS = [
 				},
 				{ 
 					"name": "20th Century",
+					"coreTeamTypes": [],
+					"fora": [],
 					"ideologicalEdges": [
 						["Pacifict", "Fascist"],
 						["Religious", "Communist"],
@@ -97,6 +105,15 @@ const EPOCHS = [
 						["Fascist", "Communist"],
 						["Fascist", "Monarchist"]
 					]
+				},
+				{
+					"name": "Contemporary"
+				},
+				{
+					"name": "22nd Century"
+				},
+				{
+					"name": "Far Future"
 				}
 	];
 
@@ -154,6 +171,9 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				
 				var universe = generateUniverse();
 				
+				console.warn("Stopping here to debug object behaviour");
+				return;
+				
 				var megagame = {};
 			
 				generateName(megagame);
@@ -184,6 +204,8 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 			////////////////////////////
 			// DATA GENERATION FUNCTIONS
 			
+			// Prevents anachronisms by generating a universe that only contains
+			//  concepts that were understood at the time in the universe.
 			function generateUniverse() {
 				
 				// Initialise the facets of the universe that the epochs can add to
@@ -195,20 +217,21 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				
 				var gameEpochIndex = d(EPOCHS.length) - 1;
 				
-				console.log("Game's epoch index is " + gameEpochIndex);
+				//console.log("Game's epoch index is " + gameEpochIndex);
 				
 				for (var step = 0; step <= gameEpochIndex; step++)
 				{
-					console.log(" step " + step + " of " + gameEpochIndex);
+					//console.log(" step " + step + " of " + gameEpochIndex);
 					
 					for (let facet in EPOCHS[step]) {
-						console.log("   step " + step + " has facet " + facet + " of value " + EPOCHS[step][facet]);
+						//console.log("   step " + step + " has facet " + facet);
 						
 						if (facet != "name") {
 							
-							console.log("    concatenating epoch " + step + "'s facet (" + EPOCHS[step][facet] + ") to universe's facet");
+							//console.log("    concatenating this:");
+							//console.log(EPOCHS[step][facet]);
 							
-							generatedUniverse[facet] = generatedUniverse[facet].concat(EPOCHS[step][facet]); // Will throw an exception if the "bare" universe lacks this facet to add to! 
+							generatedUniverse[facet] = generatedUniverse[facet].concat(EPOCHS[step][facet]); // Will throw an exception if the "bare" universe lacks this facet to add to! Array.prototype.concat returns a NEW object. 
 						}
 						else
 						{
@@ -221,70 +244,7 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				
 				console.log(generatedUniverse);
 				
-				console.warn("Writing literal universe during generation development.");
-				
-				var universe = {};
-				
-				universe["coreTeamTypes"] = [
-						{"name" : "Legislative"},
-						{"name" : "Political Opposition"},
-						{"name" : "Sovereign Nation"},
-						{"name" : "Belligerent"},
-						{"name" : "Manipulator"},
-						{"name" : "Corporation"},
-						{"name" : "Emergency Service"},
-						{"name" : "Criminal Band"},
-						{"name" : "House"}
-					];
-					
-				
-				universe["ideologicalEdges"] = 				
-				[
-					// Pacifist-Militarist
-					["Pacifist", "Militarist"],
-					["Pacifist", "Fascist"],
-					
-					["Militarist", "Environmentalist"],
-					["Militarist", "Monarchist"],
-					
-					// Religious
-					["Religious", "Secular"],
-					["Religious", "Radical"],
-					["Religious", "Democratic"],
-					["Religious", "Authoritarian"],
-					["Religious", "Communist"],
-					["Religious", "Monarchist"],
-					
-					//Secular
-					
-					//Socialist
-					["Socialist", "Fascist"],
-					["Socialist", "Industrialist"],
-					["Socialist", "Authoritarian"],
-					["Socialist", "Communist"],
-					["Socialist", "Monarchist"],
-					
-					// Fascist
-					["Fascist", "Liberal"],
-					["Fascist", "Democratic"],
-					["Fascist", "Multicultural"],
-					["Fascist", "Communist"],
-					["Fascist", "Monarchist"],
-					
-					// Authority
-					["Democratic", "Imperial"],
-					
-					// Corporate
-					["Industrial", "Scientific"],
-					["Scientific", "Financial"],
-					["Financial", "Industrial"]
-					
-					// And there can be many more...
-				];
-				
-				universe["fora"] = ["Leadership", "Diplomatic", "Market", "Operational", "Scientific", "Political"];
-				
-				return universe;
+				return generatedUniverse;
 			}
 			
 			function generateSetting(mg) {
@@ -586,6 +546,7 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 			
 			function describeMegagame(mg) {
 				
+				console.log("Dumping megagameML:");
 				console.log(mg);
 				
 				var description = "";
@@ -866,7 +827,7 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 					
 					if (toPick > a.length) {console.warn(" Not enough entries in array"); return null;}
 					
-					var drainingArray = a;
+					var drainingArray = a.copy();
 					var fillingArray = [];
 
 					for (leftToPick = toPick; leftToPick > 0; leftToPick-- ) {
