@@ -16,9 +16,6 @@ const NAME_END_NOUNS = ["Skies", "Nightmare", "Horizons", "Civil War", "Coup", "
 // Excluded from generation since these already exist in the real world :)
 const FORBIDDEN_NAMES = ["Watch the Skies", "Urban Nightmare", "A Very British Coup", "A Very British Civil War", "Infinite Horizons", "Blood and Thunder", "Dire Straits", "Hands of the Many", "Mirror Shades"];
 
-const FUTURES = ["the Imminent Future", "the Future", "the Far Future"];
-const PASTS = ["Ancient", "Medieval", "Early Modern", "Industrial Revolution", "1910s", "1930s-1940s", "Cold War", "Present Day"]; 
-
 const CORE_TEAMTYPE_DESCRIPTIONS = {
 	"Legislative": "to enact and implement legislation. ",
 	"Political Opposition": "to resist or replace those currently in power by essentially non-violent means. ",
@@ -26,21 +23,27 @@ const CORE_TEAMTYPE_DESCRIPTIONS = {
 	"Belligerent": "to win victory in armed conflict. ",
 	"Manipulator": "to influence the more conventional teams indirectly, by deception, subversion, infiltration or, as a last resort, force. ",
 	"Corporation": "to profit and to grow. ",
-	"Emergency Service": "to serve their civic function without undue cost in money or lives. ",
+	"Civil/Emergency Service": "to serve their civic function without undue cost in money or lives. ",
 	"Criminal Band": "to do as they wish in spite of the law. ",
 	"House": "to protect and further the ambitions of their family, noble house, kinsmen, clan or vassals. "
 };
 	
 const EXTRA_TEAMTYPES = [
 	{"name" : "Powerful Backer", "goal" : "to use their great wealth and power to pull strings from behind the scenes, without intervening directly. "},
-	{"name" : "Press", "goal" : "to spread the news, but from their own ideological perspective. "}
+	{"name" : "Press", "goal" : "to spread the news from their own ideological perspective. "}
 ]
 
 // I didn't want to encode any historical knowledge but I kept generating Ancient
 //  settings with Corporation teams and Communist ideology so I did it anyway.
+
+
+//const PASTS = ["Ancient", "Medieval", "Early Modern", "Industrial Revolution", "1910s", "1930s-1940s", "Cold War", "Present Day"]; 
+
+
 const EPOCHS = [
 				{ 
 					"name": "Ancient", 
+					"future": false,
 					"coreTeamTypes": [
 						{"name" : "Legislative"},
 						{"name" : "Political Opposition"},
@@ -64,24 +67,29 @@ const EPOCHS = [
 					]
 				},
 				{ 
-					"name": "Classical",
-					"coreTeamTypes": [],
-					"fora": [],
-					"ideologicalEdges": []
-				},
-				{ 
 					"name": "Medieval",
+					"future": false,
 					"coreTeamTypes": [],
 					"fora": [],
 					"ideologicalEdges": []					
 				},
 				{ 
-					"name": "Modern", 
+					"name": "Early Modern",
+					"future": false,					
 					"coreTeamTypes": [
-						{"name": "Emergency Service"},
+						{"name": "Civil/Emergency Service"},
 						{"name": "Corporation"}
 					],
 					"fora": ["Scientific"],
+					"ideologicalEdges": [
+					]
+				},
+								{ 
+					"name": "Industrial Revolution",
+					"future": false,					
+					"coreTeamTypes": [
+					],
+					"fora": [],
 					"ideologicalEdges": [
 						["Industrial", "Scientific"],
 						["Scientific", "Financial"],
@@ -90,6 +98,7 @@ const EPOCHS = [
 				},
 				{ 
 					"name": "20th Century",
+					"future": false,
 					"coreTeamTypes": [],
 					"fora": [],
 					"ideologicalEdges": [
@@ -107,13 +116,20 @@ const EPOCHS = [
 					]
 				},
 				{
-					"name": "Contemporary"
+					"name": "Contemporary",
+					"future": false
 				},
 				{
-					"name": "22nd Century"
+					"name": "The Imminent Future",
+					"future": true,
 				},
 				{
-					"name": "Far Future"
+					"name": "The Future",
+					"future": true,
+				},
+				{
+					"name": "The Far Future",
+					"future": true,
 				}
 	];
 
@@ -170,9 +186,6 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 			function main() {
 				
 				var universe = generateUniverse();
-				
-				console.warn("Stopping here to debug object behaviour");
-				return;
 				
 				var megagame = {};
 			
@@ -242,28 +255,39 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				
 				console.log("Dumping GENERATED UNIVERSE:");
 				
-				console.log(generatedUniverse);
+				console.log(JSON.stringify(generatedUniverse));
 				
 				return generatedUniverse;
 			}
 			
-			function generateSetting(mg) {
+			function generateSetting(mg, universe) {
 				
+					console.warn("old implementation saved during refactor");
 					mg.isFuture = coin();
 					
 					if (!mg.isFuture) { mg.isFiction = coin(); } else { mg.isFiction = true; }
 					
 					if (mg.isFuture) { mg.era = pick(FUTURES); } else { mg.era = pick(PASTS); }
 					
+					// New implementation
+					
+					epoch = universe.epoch;
+					
 				}
 				
 			function generateTeams(mg, universe) {
 				
-				mg.teamTypes = d(3) + 1;
+				mg.teamTypesNumber = d(3) + 1;
 				
-				// console.log("NOW PICKING " + mg.teamTypes + " team types from CORE_TEAMTYPES");
+				console.log("NOW PICKING " + mg.teamTypesNumber + " team types from CORE_TEAMTYPES");
 				
-				mg.teamTypes = pickFrom(universe["coreTeamTypes"], mg.teamTypes);
+				mg.teamTypes = pickFrom(universe["coreTeamTypes"], mg.teamTypesNumber);
+				
+				console.warn("Object/types getting mangled!!");
+				
+				console.log("typeof teamTypes = " + typeof mg.teamTypes);
+				
+				console.log(JSON.stringify(mg.teamTypes));
 				
 				// Iterate through each selected teamType
 				for (teamType of mg.teamTypes)
@@ -546,7 +570,7 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 			
 			function describeMegagame(mg) {
 				
-				console.log("Dumping megagameML:");
+				console.log("megagameML reference:");
 				console.log(mg);
 				
 				var description = "";
@@ -825,9 +849,9 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 
 				function pickFrom(a, toPick) {
 					
-					if (toPick > a.length) {console.warn(" Not enough entries in array"); return null;}
+					if (toPick > a.length) {console.warn(" Not enough entries in array!"); return null;}
 					
-					var drainingArray = a.copy();
+					var drainingArray = a;
 					var fillingArray = [];
 
 					for (leftToPick = toPick; leftToPick > 0; leftToPick-- ) {
