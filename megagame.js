@@ -1,4 +1,6 @@
 
+// 1023AM
+
 const fullstop = ". ";
 
 // for (let i in x) sets i to the numerical? indexes 0 1 2...
