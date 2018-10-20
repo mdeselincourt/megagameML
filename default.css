@@ -23,7 +23,7 @@ p, ol, ul {
 }
 
 p {
-	line-height: 190%;
+	/* line-height: 190%; */
 }
 
 strong {
@@ -283,7 +283,7 @@ hr {
 	{
 		overflow: hidden;
 		height: 100px;
-		background: url(images/pic02.jpg) no-repeat center;
+		background: url(images/Industrial%20Revolution.jpg) no-repeat center;
 		background-size: cover;
 	}
 	

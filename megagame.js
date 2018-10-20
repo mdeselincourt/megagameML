@@ -169,8 +169,6 @@ const RESOURCE_TYPES = ["Currency", "Commodities", "Knowledge", "Influence"];
 
 const RESOURCE_FORM_FACTORS = ["Paper Slips", "Discs", "Cards", "Cubes"];
 
-const RESOURCE_DYNAMICS = ["Closed", "Finite", "Infinite"];
-
 const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 
 
@@ -216,6 +214,10 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				drawCharts(megagame);
 				
 				outputJSON(megagame);
+				
+				console.log(document.styleSheets);
+				
+				decoratePage(megagame);
 			}
 			
 			////////////////////////////
@@ -560,8 +562,8 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 						{
 							"type": gameResourceTypes[i],
 							"form": pick(RESOURCE_FORM_FACTORS),
-							"inputDynamic": pick(RESOURCE_DYNAMICS),
-							"outputDynamic": pick(RESOURCE_DYNAMICS)
+							"inputDynamic": pick(["Closed", "Finite"]),
+							"outputDynamic": pick(["Closed", "Finite", "Infinite"])
 						}
 					);
 						
@@ -700,15 +702,55 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				
 				var rn = mg.resources.length;
 				
-				economyDescription += "<p>There " + isAre(rn) + " " + rn + " type" + s(rn) + " of resource.";
+				economyDescription += "<p>There " + isAre(rn) + " " + rn + " type" + s(rn) + " of resource.</p>";
 				
-				console.warn("Economy description incomplete");
+				for (var resource of mg.resources)
+				{
+					var resourceDescription = "";
+					
+					resourceDescription += "<b>" + resource.type + " " + resource.form + ":</b> ";
+					
+					console.warn("Having trouble with economy descriptions");
+					
+					
+					var explanations = []
+					explanations["Closed"] = [];
+					explanations["Finite"] = [];
+					explanations["Infinite"] = [];
+					
+					
+					explanations["Closed"]["Closed"] = "The number of these in the game is fixed and they can only be traded between players.";
+					explanations["Closed"]["Finite"] = "All of these start in play, and some of them will be spent with control during play, likely causing deflation of prices.";
+					explanations["Closed"]["Infinite"] = "All of these start in play, so they may become scarce or even run out entirely.";
+					
+					explanations["Finite"]["Closed"] = "These can be earned through game mechanics, but only then traded between players, likely causing inflation of prices.";
+					
+					explanations["Finite"]["Finite"] = "These can be both earned from and spent with control in limited numbers.";
+					
+					explanations["Finite"]["Infinite"] = "These can be earned from control, and there is no limit to how many can be spent.";
+					
+					
+							
+					var exp = explanations[resource.inputDynamic][resource.outputDynamic];
+					
+					if (exp != null) {
+						resourceDescription += exp;	
+					}
+					
+					resourceDescription = "<p>" + resourceDescription + "</p>";
+					
+					economyDescription += resourceDescription;
+				}
 				
 				return economyDescription;
 			}
 			
 				
 			function drawCharts(mg) {
+				
+				var newHeader = document.createElement('h2');
+				newHeader.html = "Ideologies";
+				document.getElementById('mainContent').appendChild(newHeader);
 				
 				for (var i = 0; i < mg.ideologySpaces.length; i++) 
 				{					
@@ -826,17 +868,31 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 
 			// HTML-ify the JSON and display
 			function outputJSON(mg) {
-				var description = "<h2>MegagameML:</h2><p><pre>" + syntaxHighlight(mg) + "</pre></p>";
 				
 				var newHeader = document.createElement('h2');
+				newHeader.innerHTML = "MegagameML:";
 				var newPara = document.createElement('p');
 				var newPre = document.createElement('pre');
-				
 				newPre.innerHTML = syntaxHighlight(mg);
 								
-				document.getElementById('mainContent').appendChild(newCanvas); // adds the canvas to #someBox
+				document.getElementById('mainContent').appendChild(newHeader); 
+				document.getElementById('mainContent').appendChild(newPara); 
+				newPara.appendChild(newPre);
 
 			}
+
+			function decoratePage(mg) {
+						
+				var x = document.getElementById("banner");
+				
+				var url = "images/" + mg.epoch + ".jpg";
+				
+				console.log("url is '" + url + "'");
+				
+				x.style.backgroundImage = "url('" + url + "')";
+				//x.style.backgroundImage = "url(images/20th Century)";
+			}
+				
 				
 				////////////////////
 				// UTILITY FUNCTIONS
