@@ -42,7 +42,7 @@ const EXTRA_TEAMTYPES = [
 
 const EPOCHS = [
 				{ 
-					"name": "Ancient", 
+					"epochName": "Ancient", 
 					"future": false,
 					"coreTeamTypes": [
 						{"name" : "Legislative"},
@@ -67,14 +67,14 @@ const EPOCHS = [
 					]
 				},
 				{ 
-					"name": "Medieval",
+					"epochName": "Medieval",
 					"future": false,
 					"coreTeamTypes": [],
 					"fora": [],
 					"ideologicalEdges": []					
 				},
 				{ 
-					"name": "Early Modern",
+					"epochName": "Early Modern",
 					"future": false,					
 					"coreTeamTypes": [
 						{"name": "Civil/Emergency Service"},
@@ -85,7 +85,7 @@ const EPOCHS = [
 					]
 				},
 								{ 
-					"name": "Industrial Revolution",
+					"epochName": "Industrial Revolution",
 					"future": false,					
 					"coreTeamTypes": [
 					],
@@ -97,7 +97,7 @@ const EPOCHS = [
 					]
 				},
 				{ 
-					"name": "20th Century",
+					"epochName": "20th Century",
 					"future": false,
 					"coreTeamTypes": [],
 					"fora": [],
@@ -116,19 +116,19 @@ const EPOCHS = [
 					]
 				},
 				{
-					"name": "Contemporary",
+					"epochName": "Contemporary",
 					"future": false
 				},
 				{
-					"name": "The Imminent Future",
+					"epochName": "The Imminent Future",
 					"future": true,
 				},
 				{
-					"name": "The Future",
+					"epochName": "The Future",
 					"future": true,
 				},
 				{
-					"name": "The Far Future",
+					"epochName": "The Far Future",
 					"future": true,
 				}
 	];
@@ -230,25 +230,27 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				
 				var gameEpochIndex = d(EPOCHS.length) - 1;
 				
-				//console.log("Game's epoch index is " + gameEpochIndex);
+				console.log("Game's epoch index is " + gameEpochIndex);
 				
 				for (var step = 0; step <= gameEpochIndex; step++)
 				{
-					//console.log(" step " + step + " of " + gameEpochIndex);
+					console.log(" step " + step + " of " + gameEpochIndex);
 					
 					for (let facet in EPOCHS[step]) {
-						//console.log("   step " + step + " has facet " + facet);
+						console.log("   step " + step + " has facet " + facet);
 						
-						if (facet != "name") {
+						if (!["epochName","future"].includes(facet)) {
+							// Add to facet
 							
-							//console.log("    concatenating this:");
-							//console.log(EPOCHS[step][facet]);
+							console.log("    concatenating this:");
+							console.log(EPOCHS[step][facet]);
 							
 							generatedUniverse[facet] = generatedUniverse[facet].concat(EPOCHS[step][facet]); // Will throw an exception if the "bare" universe lacks this facet to add to! Array.prototype.concat returns a NEW object. 
 						}
 						else
 						{
-							generatedUniverse["epoch"] = EPOCHS[step][facet];
+							// Update facet
+							generatedUniverse[facet] = EPOCHS[step][facet];
 						}
 					}
 				}
@@ -263,15 +265,14 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 			function generateSetting(mg, universe) {
 				
 					console.warn("old implementation saved during refactor");
-					mg.isFuture = coin();
 					
-					if (!mg.isFuture) { mg.isFiction = coin(); } else { mg.isFiction = true; }
+					if (!universe.future) { mg.isFiction = coin(); } else { mg.isFiction = true; }
 					
-					if (mg.isFuture) { mg.era = pick(FUTURES); } else { mg.era = pick(PASTS); }
+					mg.isFuture = universe.future;
 					
 					// New implementation
 					
-					epoch = universe.epoch;
+					mg.epoch = universe["epochName"];
 					
 				}
 				
@@ -655,11 +656,11 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				
 			}
 			
-			// Describe the era, futureness, fictionness
+			// Describe the epoch, futureness, fictionness
 			function describeSetting(mg) {
 				var settingDescription = "The era is " 
 				
-				settingDescription += mg.era;
+				settingDescription += mg.epoch;
 				
 			if(mg.isFiction && !mg.isFuture) { settingDescription += ", but in a world different to our own."; } else { settingDescription += "."; }
 				
