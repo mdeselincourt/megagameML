@@ -1,5 +1,5 @@
 # megagameML
 
-The name is misleading - it's not a markup language.
+Code project that procedurally generates design specifications for Megagames as a JavaScript Object/JSON, then renders that object into a (intentionally vague) design document.
 
-To run, download and open the "-grass" html.
+See the output at https://mdeselincourt.github.io/megagameML/

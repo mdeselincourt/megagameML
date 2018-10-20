@@ -214,6 +214,8 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				$("#mainTitle h2").html(megagame.name);
 				
 				drawCharts(megagame);
+				
+				outputJSON(megagame);
 			}
 			
 			////////////////////////////
@@ -652,8 +654,6 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				
 				description += describeEconomy(mg);
 				
-				description += "<h2>MegagameML:</h2><p><pre>" + syntaxHighlight(mg) + "</pre></p>";
-				
 				return description;
 				
 			}
@@ -821,10 +821,22 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 					// end of this ideology space
 				} 
 				// All ideology spaces drawn				
-					
-				
 
 			} // end of drawCharts
+
+			// HTML-ify the JSON and display
+			function outputJSON(mg) {
+				var description = "<h2>MegagameML:</h2><p><pre>" + syntaxHighlight(mg) + "</pre></p>";
+				
+				var newHeader = document.createElement('h2');
+				var newPara = document.createElement('p');
+				var newPre = document.createElement('pre');
+				
+				newPre.innerHTML = syntaxHighlight(mg);
+								
+				document.getElementById('mainContent').appendChild(newCanvas); // adds the canvas to #someBox
+
+			}
 				
 				////////////////////
 				// UTILITY FUNCTIONS
