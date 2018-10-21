@@ -25,7 +25,7 @@ const CORE_TEAMTYPE_DESCRIPTIONS = {
 	"Belligerent": "to win victory in armed conflict. ",
 	"Manipulator": "to influence the more conventional teams indirectly, by deception, subversion, infiltration or, as a last resort, force. ",
 	"Corporation": "to profit and to grow. ",
-	"Civil/Emergency Service": "to serve their civic function without undue cost in money or lives. ",
+	"Civil Service": "to serve their administrative or emergency civic function without undue cost in money or lives. ",
 	"Criminal Band": "to do as they wish in spite of the law. ",
 	"House": "to protect and further the ambitions of their family, noble house, kinsmen, clan or vassals. "
 };
@@ -104,7 +104,7 @@ const EPOCHS = [
 					"coreTeamTypes": [],
 					"fora": [],
 					"ideologicalEdges": [
-						["Pacifict", "Fascist"],
+						["pacifist", "Fascist"],
 						["Religious", "Communist"],
 						["Socialist", "Fascist"],
 						["Socialist", "Industrialist"],
@@ -289,8 +289,6 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				console.log("NOW PICKING " + mg.teamTypesNumber + " team types from CORE_TEAMTYPES");
 				
 				mg.teamTypes = pickFrom(universe["coreTeamTypes"], mg.teamTypesNumber);
-				
-				console.warn("Object/types getting mangled!!");
 				
 				console.log("typeof teamTypes = " + typeof mg.teamTypes);
 				
@@ -609,7 +607,7 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				}
 				else
 				{
-					mapDesc = "The game has shared game-state trackers, but no map.";
+					mapDesc = "The game has shared world-state trackers, but no map.";
 				}
 				
 				description += "<p>" + mapDesc + "</p>";
@@ -666,7 +664,7 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				
 				settingDescription += mg.epoch;
 				
-			if(mg.isFiction && !mg.isFuture) { settingDescription += ", but in a world different to our own."; } else { settingDescription += "."; }
+			if(mg.isFiction && !mg.isFuture) { settingDescription += ", but in an alternative timeline to our own."; } else { settingDescription += "."; }
 				
 				settingDescription = "<p>" + settingDescription + "</p>";
 				
@@ -680,7 +678,7 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				var fora = mg.fora;
 				var fn = fora.length;
 				
-				desc += "<p>There " + isAre(fn) + " " + fn + " official form" + s(fn) + " of player interaction, each of which has a corresponding role in most teams:"
+				desc += "<p>There " + isAre(fn) + " " + fn + " formalised mode" + s(fn) + " of player interaction, each of which has a corresponding role in most teams:"
 				
 				for (var i = 0; i < fn; i++)
 				{
@@ -702,7 +700,7 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				
 				var rn = mg.resources.length;
 				
-				economyDescription += "<p>There " + isAre(rn) + " " + rn + " type" + s(rn) + " of resource.</p>";
+				economyDescription += "<p>There " + isAre(rn) + " " + rn + " type" + s(rn) + " of resource:</p>";
 				
 				for (var resource of mg.resources)
 				{
@@ -749,7 +747,7 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 			function drawCharts(mg) {
 				
 				var newHeader = document.createElement('h2');
-				newHeader.html = "Ideologies";
+				newHeader.innerHTML = "Ideologies";
 				document.getElementById('mainContent').appendChild(newHeader);
 				
 				for (var i = 0; i < mg.ideologySpaces.length; i++) 

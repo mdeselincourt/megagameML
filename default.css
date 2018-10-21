@@ -18,6 +18,15 @@ h1, h2, h3 {
 	padding: 0;
 }
 
+h2 {
+	margin-top: 1em; /** Adjusted from template **/
+	margin-bottom: 1em; /** derp **/
+}
+
+h3 {
+	margin-bottom: 1em; /** Adjusted from template **/
+}
+
 p, ol, ul {
 	margin-top: 0px;
 }
@@ -187,6 +196,7 @@ hr {
 		font-weight: 400;
 		font-size: 2em;
 		color: #16a085;
+		margin-bottom: 0em; /** **/
 	}
 	
 	.title .byline
@@ -228,7 +238,8 @@ hr {
 	overflow: hidden;
 	background: url(images/bg01.png) repeat;
 	background-size: 100%;
-	padding: 6em 0em 2em 0em;
+	padding: 0em 0em 2em 0em; 
+	/** padding: 6em 0em 2em 0em;**/
 	background: #333333;
 }
 
@@ -343,7 +354,8 @@ hr {
 {
 	position: relative;
 	overflow: hidden;
-	padding: 6em 0em 5em 0em;
+	/** padding: 6em 0em 5em 0em; **/
+	padding: 2em 0em 5em 0em;
 }
 
 /** CONTENT */
