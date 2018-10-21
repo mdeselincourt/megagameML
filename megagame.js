@@ -1,6 +1,9 @@
 
 // 1023AM
 
+var finished = false;
+var megagame = {};
+
 const fullstop = ". ";
 
 // for (let i in x) sets i to the numerical? indexes 0 1 2...
@@ -171,6 +174,9 @@ const RESOURCE_FORM_FACTORS = ["Paper Slips", "Discs", "Cards", "Cubes"];
 
 const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 
+const COLOURS = ["Red", "Yellow", "Orange", "Green", "Blue", "Purple", "Golden", "Black", "White"];
+
+const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Rat", "Shark", "Snake", "Whale"];
 
 /*
 	Draw when document is ready	
@@ -186,8 +192,6 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 			function main() {
 				
 				var universe = generateUniverse();
-				
-				var megagame = {};
 			
 				generateName(megagame);
 
@@ -214,10 +218,10 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				drawCharts(megagame);
 				
 				outputJSON(megagame);
-				
-				console.log(document.styleSheets);
-				
+			
 				decoratePage(megagame);
+				
+				finished = true;
 			}
 			
 			////////////////////////////
@@ -708,9 +712,6 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 					
 					resourceDescription += "<b>" + resource.type + " " + resource.form + ":</b> ";
 					
-					console.warn("Having trouble with economy descriptions");
-					
-					
 					var explanations = []
 					explanations["Closed"] = [];
 					explanations["Finite"] = [];
@@ -885,10 +886,70 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 				
 				var url = "images/" + mg.epoch + ".jpg";
 				
-				console.log("url is '" + url + "'");
+				//console.log("image url is '" + url + "'");
 				
 				x.style.backgroundImage = "url('" + url + "')";
 				//x.style.backgroundImage = "url(images/20th Century)";
+			}
+			
+			function generateAbstractBriefings() {
+				
+				if (!finished) { console.error("Button clicked before generation complete?!"); return; }
+				
+				var briefings = "<h1>Abstract Briefings</h1>";
+				
+				var totalTeamsCount = 0;
+				var totalRoleCount = 0;
+				
+				// Add up total number of teams
+				for (var teamType of megagame.teamTypes) {
+					totalTeamsCount = totalTeamsCount + teamType.count;
+				}
+				
+				// Calculate number of roles
+				totalRoleCount = totalTeamsCount * megagame.fora.length;
+				
+				//console.log("totalTeamsCount = " + totalTeamsCount);
+				//console.log("totalRoleCount = " + totalRoleCount);
+				
+				// Work out how to distribute abstract team identities uniquely
+				var teamIdInterval = Math.floor((COLOURS.length * ANIMALS.length) / totalTeamsCount);
+				
+				console.log("teamIdInterval = " + teamIdInterval);
+				
+				// Describe team types		
+				var k = -1;
+				
+				for (var i in megagame.teamTypes) {
+					console.log(megagame.teamTypes[i].name);
+					
+					briefings += "<h2>" + megagame.teamTypes[i].name + " teams</h2>";
+					
+					for (var j = 0; j < megagame.teamTypes[i].count; j++)
+					{
+						k++;
+						
+						console.log("Team #" + k);
+
+						
+						var col = Math.floor((k * teamIdInterval) % COLOURS.length);
+
+						var ani = Math.floor((k * teamIdInterval) / COLOURS.length);
+						
+						console.log("col = " + col + " ani = " + ani);
+						
+						briefings += "<h3>Team " + COLOURS[col] + " " + ANIMALS[ani] + "</h3>"; 
+					}
+				}
+				
+				// Add to document.
+				
+				var briefingsNode = document.createElement('div');
+				briefingsNode.innerHTML = briefings;
+				
+				document.getElementById('mainContent').appendChild(briefingsNode);
+				
+									
 			}
 				
 				
