@@ -107,7 +107,7 @@ const EPOCHS = [
 					"coreTeamTypes": [],
 					"fora": [],
 					"ideologicalEdges": [
-						["pacifist", "Fascist"],
+						["Pacifist", "Fascist"],
 						["Religious", "Communist"],
 						["Socialist", "Fascist"],
 						["Socialist", "Industrialist"],
@@ -210,7 +210,7 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				
 				generateEconomy(megagame);
 				
-				generateTeams(megagame);
+				generateTeams(megagame); // Requires teamTypes and ideology spaces
 				
 				$("#mainContent").html(describeMegagame(megagame));
 				
@@ -274,15 +274,11 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 			}
 			
 			function generateSetting(mg, universe) {
-				
-					console.warn("old implementation saved during refactor");
-					
-					if (!universe.future) { mg.isFiction = coin(); } else { mg.isFiction = true; }
 					
 					mg.isFuture = universe.future;
-					
-					// New implementation
-					
+				
+					if (!mg.isFuture) { mg.isFiction = coin(); } else { mg.isFiction = true; }
+				
 					mg.epoch = universe["epochName"];
 					
 				}
@@ -346,7 +342,7 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 			//
 			function generateIdeologySpaces(mg, universe) {
 			
-				
+				console.warn("Ideology space generation is not an optimal heuristic - can generate sets of trackers that would be better combined into grids or polygons.");
 			
 				var ideologySpaces = [];
 					
@@ -363,11 +359,22 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				
 					if (coin()) 
 					{
-						ideologySpaces.push(buildGridSpace(bagOfEdges));
+						// Build a grid (if possible)
+
+						let is = buildGridSpace(bagOfEdges);
+						
+						console.log("Build 'grid' = " + JSON.stringify(is));
+
+						ideologySpaces.push();
 					}
 					else
 					{
-						ideologySpaces.push(buildPolygonSpace(bagOfEdges));
+						// Build a polygon (if possible)
+						let is = buildPolygonSpace(bagOfEdges);
+						
+						console.log("Build 'polygon' = " + JSON.stringify(is)); 
+
+						ideologySpaces.push(is);
 					}
 						
 					// console.log("Finished assembling space");
@@ -422,10 +429,26 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				{
 					console.log("  No independent Y axis found in remaining bag. ");
 					
-					console.warn("   If cannot make a grid use a polygon instead (unless out of edges completely)");
+					console.warn("   Could not make a grid; use a polygon instead (unless out of edges completely)");
+					
 					// We couldn't find an independent Y axis
 					
-					newSpace = {"geometry": "polygon", "edges" : [xAxis]}
+					console.warn("    Trying a remaining-edges-in-bag-naive polygon");
+					
+					yAxis = popRandomFrom(bagOfEdges);
+					
+					console.log("yAxis = " + JSON.stringify(yAxis));
+					
+					if (bagOfEdges.length == 0)
+					{
+						console.log("There AREN'T any more axes, making a tracker.");
+						newSpace = {"geometry": "tracker", "edges": [xAxis]};
+					}
+					else
+					{
+						console.log("There's another edge; making a (order-naive) polygon");
+						newSpace = {"geometry": "polygon", "edges" : [xAxis,yAxis]};
+					}
 				}
 				else
 				{
@@ -441,7 +464,7 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 			}
 			
 			function buildPolygonSpace(bagOfEdges) {
-				// console.log("buildPolygonSpace()");
+				console.log("buildPolygonSpace()");
 				
 				// Try to assemble a polygon perimeter.
 				
@@ -457,42 +480,42 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				
 				for (freeEdgeIndex = 0; freeEdgeIndex < 6; freeEdgeIndex++) {
 				
-					// console.log("  Seeking edge to add to polygon after [" + freeEdgeIndex + "] of up to [5]");
+					console.log("  Seeking edge to add to polygon after [" + freeEdgeIndex + "] of up to [5]");
 				
 					var freeEdge = newSpace["edges"][freeEdgeIndex]; // Get a reference to the free edge
 
-					// console.log("   free edge is now " + freeEdge);
+					console.log("   free edge is now " + freeEdge);
 
 					var freeNode = freeEdge[1]; // Get a reference to the free edge's free node
 					
-					// console.log("  ([" + freeEdgeIndex + "] of " + newSpace["edges"].length + ")");
+					console.log("  ([" + freeEdgeIndex + "] of " + newSpace["edges"].length + ")");
 			
 					// Keep track as we search of whether we've found what we want...
 					var nextEdgeFound = false;
 					
-					// console.log("  Starting to iterate through bag of " + bagOfEdges.length + " remaining edges"); 
+					console.log("  Starting to iterate through bag of " + bagOfEdges.length + " remaining edges"); 
 					
 					// Search each remainder in the bag for a suitable edge to add
 					for (candidateNext of bagOfEdges) {
 						
-						// console.log("  Considering " + freeEdge + " <--?--< " + candidateNext + " from a bag of " + bagOfEdges.length);
+						console.log("  Considering " + freeEdge + " <--?--< " + candidateNext + " from a bag of " + bagOfEdges.length);
 						
 						if(candidateNext.includes(freeNode)) {
 						
 							// We can add this edge; but which way around?
-							// console.log("   Found a suitable edge");
+							console.log("   Found a suitable edge");
 							
 							nextEdgeFound = true;
 							
 							if (freeNode == candidateNext[0])
 							{
-								// console.log("    " + freeEdge + " <--- " + candidateNext);
+								console.log("    " + freeEdge + " <--- " + candidateNext);
 								// Attach this the right way around
 								newSpace.edges[freeEdgeIndex+1] = candidateNext;
 							}
 							else
 							{
-								// console.log("    " + freeEdge + " <--- " + candidateNext[1] + "'" + candidateNext[0]);
+								console.log("    " + freeEdge + " <--- " + candidateNext[1] + "'" + candidateNext[0]);
 								newSpace.edges[freeEdgeIndex+1] = [candidateNext[1],candidateNext[0]];
 							}
 
@@ -505,19 +528,19 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 						}
 						else
 						{
-							// console.log("   Cannot add this edge"); // Because neither of its nodes match the free node.
+							console.log("   Cannot add this edge"); // Because neither of its nodes match the free node.
 						}
 						
 					} // End of search for a successor edge
 				
-					// console.log("Finished going through bag in attempt to add edge " + freeEdgeIndex + ", nextEdgeFound = " + nextEdgeFound);
+					console.log("Finished going through bag in attempt to add edge " + freeEdgeIndex + ", nextEdgeFound = " + nextEdgeFound);
 					
 					// We are done going through the bag, did we find anything?
 					if (nextEdgeFound == false) { break; }// Do not attempt to find another edge
 					
 				} // End of loop attempting to add another edge
 				
-				// console.log("Finished space assembly, setting final properties and pushing");
+				console.log("Finished space assembly, setting final properties and pushing");
 
 				// Complete configuring the space
 				
@@ -584,8 +607,8 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 			
 			function generateTeams(mg) {
 				
-				//console.log("Generating teams into current game:");
-				//console.log(JSON.stringify(mg));
+				console.log("Generating teams into current game:");
+				console.log(JSON.stringify(mg));
 				
 				//var briefings = "<h1>Abstract Briefings</h1>";
 				
@@ -637,8 +660,24 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				
 				// Prepare to distribute teams amongst ideological positions
 				
+				
+				
 				console.warn("Working only on ideologySpaces[0] at first");
 				
+				var ids0 = mg.ideologySpaces[0];
+				
+				// Here's a visualisation of distributing teams "a" to "l" into a 5-vertex space
+				//  
+				// yMax=2  k  l
+				//      1 f  g  h  i  j
+				//      0a  b  c  d  e
+				//       0  1  2  3  4=xMax
+				///////////////////////////////////
+				
+				var xMax = 1 + ids0.edges.length; // Vertices = edges + 1
+				var yMax = totalTeamsCount / xMax;
+				
+				console.log("xMax = " + xMax + ", yMax = " + yMax);
 				
 			}
 				
