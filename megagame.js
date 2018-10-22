@@ -365,7 +365,7 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 						
 						console.log("Build 'grid' = " + JSON.stringify(is));
 
-						ideologySpaces.push();
+						ideologySpaces.push(is);
 					}
 					else
 					{
@@ -383,7 +383,11 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				
 				// console.log("Finished bag of edges"); // So there's no more spaces to be built and we are done.
 				
+				//console.log("Finished bag of edges; ideologySpaces = " + JSON.stringify(ideologyspaces));
+				
 				mg.ideologySpaces = ideologySpaces;
+				
+				//console.log("mg.ideologySpaces = " + JSON.stringify(mg.ideologyspaces));
 				
 			}// end of GenerateIdeologySpaces
 			
@@ -634,12 +638,12 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				// Describe team types		
 				var k = -1;
 				
-				for (var i in mg.teamTypes) {
+				for (let i in mg.teamTypes) {
 					//console.log(mg.teamTypes[i].name);
 					
 					mg.teamTypes[i].teams = [];
 					
-					for (var j = 0; j < mg.teamTypes[i].count; j++)
+					for (let j = 0; j < mg.teamTypes[i].count; j++)
 					{
 						k++;
 						
@@ -660,25 +664,74 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				
 				// Prepare to distribute teams amongst ideological positions
 				
-				
-				
 				console.warn("Working only on ideologySpaces[0] at first");
 				
 				var ids0 = mg.ideologySpaces[0];
 				
-				// Here's a visualisation of distributing teams "a" to "l" into a 5-vertex space
-				//  
-				// yMax=2  k  l
-				//      1 f  g  h  i  j
-				//      0a  b  c  d  e
-				//       0  1  2  3  4=xMax
-				///////////////////////////////////
+				var edgesNumber;
 				
-				var xMax = 1 + ids0.edges.length; // Vertices = edges + 1
-				var yMax = totalTeamsCount / xMax;
+				//console.log("ids0 = " + JSON.stringify(ids0));
 				
-				console.log("xMax = " + xMax + ", yMax = " + yMax);
+				var spaceVertices = [];
+				var edgeIndex = 0;
 				
+				if (ids0.geometry == "tracker") { 
+					spaceVertices = ids0.edges[0]; 
+				}
+				else if (ids0.geometry == "grid") { 
+					spaceVertices = ids0.edges[0]; 
+					spaceVertices.push(ids0.edges[1][0]); 
+					spaceVertices.push(ids0.edges[1][1]); 
+				}
+				else if (ids0.geometry == "polygon") { 
+					let i = 0;
+					while (i < ids0.edges.length - 1) {
+						//console.log("i " + i + " isn't the last");
+						spaceVertices.push(ids0.edges[i][0]);
+						i++;
+					}
+					//console.log("i " + i + " is the last");
+					spaceVertices.push(ids0.edges[i][0]);
+					spaceVertices.push(ids0.edges[i][1]);
+				}
+				
+				//console.log("spaceVertices = " + JSON.stringify(spaceVertices));
+				
+				var xCap = spaceVertices.length;
+				var yCap = Math.min(4, totalTeamsCount / spaceVertices.length)
+				
+				console.log("xCap and yCap = " + xCap + "," + yCap);
+				
+				// Assign teams to these vertices
+				
+				k = -1;
+				var x = 0;
+				var y = 0;
+				
+				for (let i in mg.teamTypes) {
+										
+					for (let j = 0; j < mg.teamTypes[i].count; j++)
+					{
+							var team = mg.teamTypes[i].teams[j];
+							
+							team.ideologicalPositions = [];
+							
+							team.ideologicalPositions[0] = [spaceVertices[x],1.0];
+							
+							if (y > 0)
+							{
+								// If y isn't zero, team isn't in the first "pure" set and has a sympathy for the next vertex
+								team.ideologicalPositions[1] = [
+									spaceVertices[(x+1)%xCap], // First param is the "next" ideology
+									(0.25*y) // Second param is a 1/4, 1/2 or 3/4 sympathy for that next ideology
+								]
+							}
+							
+							if (x == xCap - 1) { y = (y + 1) % yCap; }
+							x = (x + 1) % xCap;
+							
+					}
+				}
 			}
 				
 			///////////////////////////////////
