@@ -162,8 +162,6 @@ rare I think!)
 // Based on Coup
 const MAX_GAME_IDEOLOGIES_NUMBER = 6;
 
-	
-
 const MECHANICALNESSES = ["Political", "Political-Operational", "Operational"];
 
 const MOODS = ["Comedic", "Light-hearted", "Authentic", "Sombre", "Dark"];
@@ -174,9 +172,10 @@ const RESOURCE_FORM_FACTORS = ["Paper Slips", "Discs", "Cards", "Cubes"];
 
 const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 
-const COLOURS = ["Red", "Yellow", "Orange", "Green", "Blue", "Purple", "Golden", "Black", "White"];
+// Helpful if these lists are prime numbers long I think
+const COLOURS = ["Black", "Red", "Yellow", "Golden", "Orange", "Green", "Blue", "Purple", "Silver", "White"];
 
-const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Rat", "Shark", "Snake", "Whale"];
+const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat", "Shark", "Snake", "Whale"];
 
 /*
 	Draw when document is ready	
@@ -197,7 +196,7 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Rat", "Shark
 
 				generateSetting(megagame, universe);
 				
-				generateTeams(megagame, universe);
+				generateTeamTypes(megagame, universe);
 				
 				generateIdeologySpaces(megagame, universe);
 				
@@ -210,6 +209,8 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Rat", "Shark
 				generateInteractions(megagame, universe);
 				
 				generateEconomy(megagame);
+				
+				generateTeams(megagame);
 				
 				$("#mainContent").html(describeMegagame(megagame));
 				
@@ -240,20 +241,20 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Rat", "Shark
 				
 				var gameEpochIndex = d(EPOCHS.length) - 1;
 				
-				console.log("Game's epoch index is " + gameEpochIndex);
+				//console.log("Game's epoch index is " + gameEpochIndex);
 				
 				for (var step = 0; step <= gameEpochIndex; step++)
 				{
-					console.log(" step " + step + " of " + gameEpochIndex);
+					//console.log(" step " + step + " of " + gameEpochIndex);
 					
 					for (let facet in EPOCHS[step]) {
-						console.log("   step " + step + " has facet " + facet);
+						//console.log("   step " + step + " has facet " + facet);
 						
 						if (!["epochName","future"].includes(facet)) {
 							// Add to facet
 							
-							console.log("    concatenating this:");
-							console.log(EPOCHS[step][facet]);
+							//console.log("    concatenating this:");
+							//console.log(EPOCHS[step][facet]);
 							
 							generatedUniverse[facet] = generatedUniverse[facet].concat(EPOCHS[step][facet]); // Will throw an exception if the "bare" universe lacks this facet to add to! Array.prototype.concat returns a NEW object. 
 						}
@@ -265,7 +266,7 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Rat", "Shark
 					}
 				}
 				
-				console.log("Dumping GENERATED UNIVERSE:");
+				console.log("Dumping generated universe:");
 				
 				console.log(JSON.stringify(generatedUniverse));
 				
@@ -286,17 +287,17 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Rat", "Shark
 					
 				}
 				
-			function generateTeams(mg, universe) {
+			function generateTeamTypes(mg, universe) {
 				
 				mg.teamTypesNumber = d(3) + 1;
 				
-				console.log("NOW PICKING " + mg.teamTypesNumber + " team types from CORE_TEAMTYPES");
+				//console.log("NOW PICKING " + mg.teamTypesNumber + " team types from CORE_TEAMTYPES");
 				
 				mg.teamTypes = pickFrom(universe["coreTeamTypes"], mg.teamTypesNumber);
 				
-				console.log("typeof teamTypes = " + typeof mg.teamTypes);
+				//console.log("typeof teamTypes = " + typeof mg.teamTypes);
 				
-				console.log(JSON.stringify(mg.teamTypes));
+				//console.log(JSON.stringify(mg.teamTypes));
 				
 				// Iterate through each selected teamType
 				for (teamType of mg.teamTypes)
@@ -345,11 +346,15 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Rat", "Shark
 			//
 			function generateIdeologySpaces(mg, universe) {
 			
+				
+			
 				var ideologySpaces = [];
 					
 				var bagOfEdges = pickFrom(universe["ideologicalEdges"], d(MAX_GAME_IDEOLOGIES_NUMBER));
 			
-				// console.log("Assembling spaces from a bag of " + bagOfEdges.length + " edges");
+				console.log("Assembling spaces from bag of edges:");
+				
+				console.log(" " + JSON.stringify(bagOfEdges));
 			
 				// Go through the bag one by one, attempting to 
 				while (bagOfEdges.length > 0) {
@@ -375,7 +380,7 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Rat", "Shark
 				
 			}// end of GenerateIdeologySpaces
 			
-			// Trivial for tidiness - creates a space of a single edge
+			// Creates a space of a single edge
 			function buildTrackerSpace(edge) {
 				
 				var space = { "geometry": "tracker", "edges": [edge],  };
@@ -386,7 +391,7 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Rat", "Shark
 			
 			// Attempts to build a 2D space of 2 mutually exclusive edges. If it fails to find a second edge it will fall back to a tracker.
 			function buildGridSpace(bagOfEdges) {
-				// console.log("buildGridSpace()");
+				console.log("buildGridSpace()");
 				
 				var newSpace = {"geometry" : "grid"};
 				
@@ -397,17 +402,17 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Rat", "Shark
 				// Check through the possible Y axes for an INDEPENDENT edge
 				for (candidateY of bagOfEdges)
 				{								
-					// console.log("   Considering " + candidateY + " to oppose " + xAxis);
+					console.log("   Considering " + candidateY + " to oppose " + xAxis);
 					
 					if(!xAxis.includes(candidateY[0]) && !xAxis.includes(candidateY[1])) 
 					{
-						// console.log("  Suitable Y axis found!");
+						console.log("  Suitable Y axis found!");
 						yAxis = candidateY;
 						break; // Stop looking
 					}
 					else
 					{
-						// console.log("   edge not suitable. Next.");
+						console.log("   edge not suitable. Next.");
 					}
 				}
 				// Handle result of search
@@ -415,13 +420,16 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Rat", "Shark
 				
 				if (yAxis == null) 
 				{
-					// console.log("  No independent Y axis found in remaining bag. Making this a tracker instead.");
+					console.log("  No independent Y axis found in remaining bag. ");
+					
+					console.warn("   If cannot make a grid use a polygon instead (unless out of edges completely)");
 					// We couldn't find an independent Y axis
 					
-					newSpace = {"geometry": "tracker", "edges" : [xAxis]}
+					newSpace = {"geometry": "polygon", "edges" : [xAxis]}
 				}
 				else
 				{
+					console.log("Completing grid with y Axis");
 					// Put the chosen edges into the space
 					newSpace["edges"] = [xAxis,yAxis];
 					
@@ -572,6 +580,66 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Rat", "Shark
 				}
 				
 				mg.resources = gameResources;
+			}
+			
+			function generateTeams(mg) {
+				
+				//console.log("Generating teams into current game:");
+				//console.log(JSON.stringify(mg));
+				
+				//var briefings = "<h1>Abstract Briefings</h1>";
+				
+				var totalTeamsCount = 0;
+				var totalRoleCount = 0;
+				
+				// Add up total number of teams for ability to distribute things across them all
+				for (var teamType of mg.teamTypes) {
+					totalTeamsCount = totalTeamsCount + teamType.count;
+				}
+				
+				// Calculate number of roles for same reason
+				totalRoleCount = totalTeamsCount * mg.fora.length;
+				
+				//console.log("totalTeamsCount = " + totalTeamsCount);
+				//console.log("totalRoleCount = " + totalRoleCount);
+				
+				// Work out how to distribute abstract team identities uniquely
+				var teamIdInterval = Math.floor((ANIMALS.length * COLOURS.length) / totalTeamsCount);
+				
+				//console.log("teamIdInterval = " + teamIdInterval);
+				
+				// Describe team types		
+				var k = -1;
+				
+				for (var i in mg.teamTypes) {
+					//console.log(mg.teamTypes[i].name);
+					
+					mg.teamTypes[i].teams = [];
+					
+					for (var j = 0; j < mg.teamTypes[i].count; j++)
+					{
+						k++;
+						
+						//console.log("Team #" + k);
+	
+						// Give abstract names evenly distributed across names space
+						var col = Math.floor((k * teamIdInterval) % COLOURS.length);
+						var ani = Math.floor((k * teamIdInterval) % ANIMALS.length);
+						//console.log("col = " + col + " ani = " + ani);
+						mg.teamTypes[i].teams[j] = {};
+						mg.teamTypes[i].teams[j].name = "Team " + COLOURS[col] + " " + ANIMALS[ani];
+						
+						// 
+					}
+				}
+				
+				// Logic for ideologies is also pretty complicated.
+				
+				// Prepare to distribute teams amongst ideological positions
+				
+				console.warn("Working only on ideologySpaces[0] at first");
+				
+				
 			}
 				
 			///////////////////////////////////
@@ -892,65 +960,6 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Rat", "Shark
 				//x.style.backgroundImage = "url(images/20th Century)";
 			}
 			
-			function generateAbstractBriefings() {
-				
-				if (!finished) { console.error("Button clicked before generation complete?!"); return; }
-				
-				var briefings = "<h1>Abstract Briefings</h1>";
-				
-				var totalTeamsCount = 0;
-				var totalRoleCount = 0;
-				
-				// Add up total number of teams
-				for (var teamType of megagame.teamTypes) {
-					totalTeamsCount = totalTeamsCount + teamType.count;
-				}
-				
-				// Calculate number of roles
-				totalRoleCount = totalTeamsCount * megagame.fora.length;
-				
-				//console.log("totalTeamsCount = " + totalTeamsCount);
-				//console.log("totalRoleCount = " + totalRoleCount);
-				
-				// Work out how to distribute abstract team identities uniquely
-				var teamIdInterval = Math.floor((COLOURS.length * ANIMALS.length) / totalTeamsCount);
-				
-				console.log("teamIdInterval = " + teamIdInterval);
-				
-				// Describe team types		
-				var k = -1;
-				
-				for (var i in megagame.teamTypes) {
-					console.log(megagame.teamTypes[i].name);
-					
-					briefings += "<h2>" + megagame.teamTypes[i].name + " teams</h2>";
-					
-					for (var j = 0; j < megagame.teamTypes[i].count; j++)
-					{
-						k++;
-						
-						console.log("Team #" + k);
-
-						
-						var col = Math.floor((k * teamIdInterval) % COLOURS.length);
-
-						var ani = Math.floor((k * teamIdInterval) / COLOURS.length);
-						
-						console.log("col = " + col + " ani = " + ani);
-						
-						briefings += "<h3>Team " + COLOURS[col] + " " + ANIMALS[ani] + "</h3>"; 
-					}
-				}
-				
-				// Add to document.
-				
-				var briefingsNode = document.createElement('div');
-				briefingsNode.innerHTML = briefings;
-				
-				document.getElementById('mainContent').appendChild(briefingsNode);
-				
-									
-			}
 				
 				
 				////////////////////
