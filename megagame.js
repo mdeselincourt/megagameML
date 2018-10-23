@@ -196,7 +196,7 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 
 				generateSetting(megagame, universe);
 				
-				generateTeamTypes(megagame, universe);
+				//generateTeamTypes(megagame, universe);
 				
 				generateIdeologySpaces(megagame, universe);
 				
@@ -209,6 +209,8 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				generateInteractions(megagame, universe);
 				
 				generateEconomy(megagame);
+				
+				generateTeamTypes(megagame, universe);
 				
 				generateTeams(megagame); // Requires teamTypes and ideology spaces
 				
@@ -675,30 +677,18 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				var spaceVertices = [];
 				var edgeIndex = 0;
 				
-				if (ids0.geometry == "tracker") { 
-					spaceVertices = ids0.edges[0]; 
-				}
-				else if (ids0.geometry == "grid") { 
-					spaceVertices = ids0.edges[0]; 
-					spaceVertices.push(ids0.edges[1][0]); 
-					spaceVertices.push(ids0.edges[1][1]); 
-				}
-				else if (ids0.geometry == "polygon") { 
-					let i = 0;
-					while (i < ids0.edges.length - 1) {
-						//console.log("i " + i + " isn't the last");
-						spaceVertices.push(ids0.edges[i][0]);
-						i++;
-					}
-					//console.log("i " + i + " is the last");
-					spaceVertices.push(ids0.edges[i][0]);
-					spaceVertices.push(ids0.edges[i][1]);
-				}
+				// Collapse my annoyingly inconsistent representation of spaces (grids and polygons) into a consistent list of vertices
+				
+				console.warn("Trying to refactor into a function");
+				
+				var spaceVertices = spaceEdgesToVertices(ids0);
+								
 				
 				//console.log("spaceVertices = " + JSON.stringify(spaceVertices));
 				
-				var xCap = spaceVertices.length;
-				var yCap = Math.min(4, totalTeamsCount / spaceVertices.length)
+				var xCap = spaceVertices.length; // one above the max, for use in modulo operator
+				
+				var yCap = 0;// Math.min(4, totalTeamsCount / spaceVertices.length) // From older, mothballed implementation...
 				
 				console.log("xCap and yCap = " + xCap + "," + yCap);
 				
@@ -706,7 +696,7 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				
 				k = -1;
 				var x = 0;
-				var y = 0;
+				// var y = 0; // From older, mothballed implementation...
 				
 				for (let i in mg.teamTypes) {
 										
@@ -716,22 +706,81 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 							
 							team.ideologicalPositions = [];
 							
-							team.ideologicalPositions[0] = [spaceVertices[x],1.0];
+							team.ideologicalPositions[0] = spaceVertices[x % xCap];
+							
+							generateRoles(mg, team);
+							
+							/** Older, mothballed, difficult implementation!
 							
 							if (y > 0)
 							{
 								// If y isn't zero, team isn't in the first "pure" set and has a sympathy for the next vertex
 								team.ideologicalPositions[1] = [
-									spaceVertices[(x+1)%xCap], // First param is the "next" ideology
-									(0.25*y) // Second param is a 1/4, 1/2 or 3/4 sympathy for that next ideology
+									spaceVertices[(x+y)%xCap], // First param is the "next" ideology
+									(0.5) // Second param is a 1/4, 1/2 or 3/4 sympathy for that next ideology
 								]
 							}
 							
 							if (x == xCap - 1) { y = (y + 1) % yCap; }
-							x = (x + 1) % xCap;
+							**/
 							
+							x = (x + 1) % xCap;
 					}
 				}
+				
+			
+			}
+			
+			// Unusually, not called from the main; instead a sub-function of generateTeams
+			function generateRoles(mg, t) {
+				
+				var rc = mg.fora.length;
+				
+				t.roles = [];
+				
+				var sympathySeed = 0; // This will tick up for every role-space pair and use modulo to ensure it fits the space.
+				
+				for (let r = 0; r < rc; r++)
+				{
+					//console.log("Generating role " + r + " (" + mg.fora[r] + ") for team " + t.name);
+					
+					let newRole = {};
+					
+					// Role job should correspond to one of the games' fora
+					newRole.job = mg.fora[r]; 
+					
+					// Pick an arbitrary sympathy (secondary ideological alignment- primary ideology is team's and thus not stored in the role) for EACH ideology space.
+					newRole.sympathies = [];
+					
+					for (let is = 0; is < mg.ideologySpaces.length; is++)
+					{
+						let space = mg.ideologySpaces[is]; // Get an easy ref to the space
+						
+						let verts = spaceEdgesToVertices(space); // Get nice easy verts from the space
+						
+						// console.log("  Generating position in space " + JSON.stringify(space));
+						
+						// Turn the sympathySeed into a sympathy that fits the current ideology space
+						let sympathy = sympathySeed % verts.length;
+						
+						//console.log("   Sympathy for is[" + is + "] is [" + sympathy + "](" + verts[sympathy] + ") of " + JSON.stringify(verts));
+						
+						newRole.sympathies[is] = verts[sympathy];
+						
+						sympathySeed++;
+					}
+										
+					// Give the role an arbitrary selfishness
+					newRole.selfishness = d(3)-2;
+					
+					// Give the role an arbitrary honesty
+					newRole.honesty = d(3)-2;
+					
+					// Save completed role to array
+					t.roles.push(newRole); 
+					
+				}
+				
 			}
 				
 			///////////////////////////////////
@@ -916,7 +965,7 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 					var space = mg.ideologySpaces[i];
 			
 					//console.log("Drawing space " + i + ", JSON:");
-					//console.log(space);
+					//console.log(JSON.stringify(space));
 					
 					// Add canvases to the page
 					//console.log(" Creating dynamicCanvas" + i);
@@ -1154,6 +1203,41 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 			function s(n)
 			{
 				if (n == 1) { return ""; } else { return "s"; }
+			}
+			
+			function spaceEdgesToVertices(space) {
+				
+				var vertices = [];
+				
+				if (space.geometry == "tracker") { 
+					//console.log("Vertexifying a tracker");
+					vertices.push(space.edges[0][0]);
+					vertices.push(space.edges[0][1]);					
+				}
+				else if (space.geometry == "grid") { 
+					//console.log("Vertexifying a grid");
+					vertices.push(space.edges[0][0]);
+					vertices.push(space.edges[0][1]);
+					vertices.push(space.edges[1][0]); 
+					vertices.push(space.edges[1][1]); 
+				}
+				else if (space.geometry == "polygon") { 
+					//console.log("Vertexifying a polygon");
+					let i = 0;
+					while (i < space.edges.length - 1) {
+						//console.log("i " + i + " isn't the last");
+						vertices.push(space.edges[i][0]);
+						i++;
+					}
+					//console.log("i " + i + " is the last");
+					vertices.push(space.edges[i][0]);
+					vertices.push(space.edges[i][1]);
+				}
+				
+				//console.log("Vertices found are " + JSON.stringify(vertices) );
+				
+				return vertices;
+				
 			}
 			
 			// From https://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
