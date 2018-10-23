@@ -220,6 +220,8 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				
 				drawCharts(megagame);
 				
+				
+				
 				outputJSON(megagame);
 			
 				decoratePage(megagame);
@@ -679,7 +681,7 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				
 				// Collapse my annoyingly inconsistent representation of spaces (grids and polygons) into a consistent list of vertices
 				
-				console.warn("Trying to refactor into a function");
+				//console.warn("Trying to refactor into a function");
 				
 				var spaceVertices = spaceEdgesToVertices(ids0);
 								
@@ -859,13 +861,17 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				
 					// End of team description
 				} 
-				// End of team descriptions
 				
+				// End of team descriptions
 				description += describeInteractions(mg);
 				
 				// Describe economy
-				
 				description += describeEconomy(mg);
+				
+				console.warn("This code organisation makes it hard to put this under the diagrams");
+				
+				// Generate briefings
+				description += describeBriefings(mg);
 				
 				return description;
 				
@@ -953,6 +959,49 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				return economyDescription;
 			}
 			
+			function describeBriefings(mg) {
+				
+				var description = "";
+				
+				description += "<h1>Briefings (experimental!)</h1>";
+				
+				description += "<p><i>Disclaimer: this generator lacks a real designer's historical/genre knowledge, so generated teams are arbitrary!</i></p>";
+				
+				for (tt of mg.teamTypes) 
+				{	
+					description += "<h2>" + tt.name + " teams</h2>";
+					
+					for (t of tt.teams) 
+					{
+						description += "<h3>" + t.name + "</h3>";
+						
+						description += "<p>You are a " + JSON.stringify(t.ideologicalPositions) + " organisation.</p>";
+						
+						for (r of t.roles)
+						{
+							description += "<h4>" + r.job + " player</h4><p>";
+							
+							// Ah shucks these should be switch cases probably
+							
+							console.warn("Sympathies are not made nice!");
+							
+							description += "Though your primary ideology is " + t.ideologicalPositions[0] + ", you are sympathetic to " + JSON.stringify(r.sympathies) + ". ";
+							
+							if (r.selfishness == 1) { description += "You are strongly motivated by personal ambition. "; }
+							else if (r.selfishness == -1) { description += "You are passionately loyal to your team's interests. "; }
+							
+							if (r.honestly == 1) { description += "You are very principled and moral when pursuing your goals. "; }
+							else if (r.honesty == -1) { description += "You are devious and Machiavellian in pursuing your goals. "; }
+							
+							description += "</p>";
+						}
+						
+					}
+					
+				}
+				
+				return description;
+			}
 				
 			function drawCharts(mg) {
 				
