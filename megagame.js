@@ -1,4 +1,4 @@
-
+﻿
 // 1023AM
 
 var finished = false;
@@ -175,7 +175,7 @@ const RESOURCE_FUNCTIONS = ["Scoring", "Investing", "Trading"];
 // Helpful if these lists are prime numbers long I think
 const COLOURS = ["Black", "Red", "Yellow", "Golden", "Orange", "Green", "Blue", "Purple", "Silver", "White"];
 
-const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat", "Shark", "Snake", "Whale"];
+const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion 🦁", "Ox 🐂", "Dove 🕊️", "Rat 🐀", "Shark 🦈", "Snake 🐍", "Whale 🐋"];
 
 /*
 	Draw when document is ready	
@@ -437,11 +437,11 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				{
 					console.log("  No independent Y axis found in remaining bag. ");
 					
-					console.warn("   Could not make a grid; use a polygon instead (unless out of edges completely)");
+					console.log("   Could not make a grid; use a polygon instead (unless out of edges completely)");
 					
 					// We couldn't find an independent Y axis
 					
-					console.warn("    Trying a remaining-edges-in-bag-naive polygon");
+					console.log("    Trying a remaining-edges-in-bag-naive polygon");
 					
 					yAxis = popRandomFrom(bagOfEdges);
 					
@@ -449,12 +449,12 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 					
 					if (bagOfEdges.length == 0)
 					{
-						console.log("There AREN'T any more axes, making a tracker.");
+						console.log("     There AREN'T any more axes, making a tracker.");
 						newSpace = {"geometry": "tracker", "edges": [xAxis]};
 					}
 					else
 					{
-						console.log("There's another edge; making a (order-naive) polygon");
+						console.log("     There's another edge; making a (order-naive) polygon");
 						newSpace = {"geometry": "polygon", "edges" : [xAxis,yAxis]};
 					}
 				}
@@ -639,8 +639,8 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				
 				//console.log("teamIdInterval = " + teamIdInterval);
 				
-				// Describe team types		
-				var k = -1;
+				// Describe team types starting from a varying colour so that e.g. "Black Ant" isn't always the first team
+				var k = -1 + d(COLOURS.length);
 				
 				for (let i in mg.teamTypes) {
 					//console.log(mg.teamTypes[i].name);
@@ -659,6 +659,7 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 						//console.log("col = " + col + " ani = " + ani);
 						mg.teamTypes[i].teams[j] = {};
 						mg.teamTypes[i].teams[j].name = "Team " + COLOURS[col] + " " + ANIMALS[ani];
+						mg.teamTypes[i].teams[j].colour = COLOURS[col];
 						
 						// 
 					}
@@ -668,68 +669,67 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 				
 				// Prepare to distribute teams amongst ideological positions
 				
-				console.warn("Working only on ideologySpaces[0] at first");
+				for (idIndex in mg.ideologySpaces) {
 				
-				var ids0 = mg.ideologySpaces[0];
+					console.log("ids = [" + idIndex + "]");
 				
-				var edgesNumber;
+					console.warn("WARNING - refactoring out static [0]");
 				
-				//console.log("ids0 = " + JSON.stringify(ids0));
-				
-				var spaceVertices = [];
-				var edgeIndex = 0;
-				
-				// Collapse my annoyingly inconsistent representation of spaces (grids and polygons) into a consistent list of vertices
-				
-				//console.warn("Trying to refactor into a function");
-				
-				var spaceVertices = spaceEdgesToVertices(ids0);
+					var ids0 = mg.ideologySpaces[idIndex];
+					
+					//console.log("ids0 = " + JSON.stringify(ids0));
+					
+					// Collapse my annoyingly inconsistent representation of spaces (grids and polygons) into a consistent list of vertices
+					
+					var spaceVertices = spaceEdgesToVertices(ids0);
+					//console.log("spaceVertices = " + JSON.stringify(spaceVertices));
+
+					// Save vertices length for modulo-cycling through ideologies.
+					var xCap = spaceVertices.length; // one above the max, for use in modulo operator
+					// var yCap = Math.min(4, totalTeamsCount / spaceVertices.length) // From older, mothballed implementation...
+					console.log("xCap = " + xCap);
+					
+					////////////////////////////////////////////////
+					// Assign all teams one of this space's vertices
+					
+					var x = 0;
+					// var y = 0; // From older, mothballed implementation...
+					
+					
+					// Go through all team types
+					for (let i in mg.teamTypes) {
+											
+						// Go through all teams
+						for (let j = 0; j < mg.teamTypes[i].count; j++)
+						{
+								var team = mg.teamTypes[i].teams[j];
 								
-				
-				//console.log("spaceVertices = " + JSON.stringify(spaceVertices));
-				
-				var xCap = spaceVertices.length; // one above the max, for use in modulo operator
-				
-				var yCap = 0;// Math.min(4, totalTeamsCount / spaceVertices.length) // From older, mothballed implementation...
-				
-				console.log("xCap and yCap = " + xCap + "," + yCap);
-				
-				// Assign teams to these vertices
-				
-				k = -1;
-				var x = 0;
-				// var y = 0; // From older, mothballed implementation...
-				
-				for (let i in mg.teamTypes) {
-										
-					for (let j = 0; j < mg.teamTypes[i].count; j++)
-					{
-							var team = mg.teamTypes[i].teams[j];
-							
-							team.ideologicalPositions = [];
-							
-							team.ideologicalPositions[0] = spaceVertices[x % xCap];
-							
-							generateRoles(mg, team);
-							
-							/** Older, mothballed, difficult implementation!
-							
-							if (y > 0)
-							{
-								// If y isn't zero, team isn't in the first "pure" set and has a sympathy for the next vertex
-								team.ideologicalPositions[1] = [
-									spaceVertices[(x+y)%xCap], // First param is the "next" ideology
-									(0.5) // Second param is a 1/4, 1/2 or 3/4 sympathy for that next ideology
-								]
-							}
-							
-							if (x == xCap - 1) { y = (y + 1) % yCap; }
-							**/
-							
-							x = (x + 1) % xCap;
+								if (team.ideologicalPositions == null) { team.ideologicalPositions = []; }
+								
+								// Fill array of the team's ideological positions
+								//  At the time of writing the same ideology can appear in multiple spaces and therefore
+								//   multiple times in this list. Since these positions explicitly map to ideology spaces 
+								team.ideologicalPositions[idIndex] = spaceVertices[x % xCap];
+								
+								// Generate all the team's roles (another loop, tidied up into a separate function)
+								generateRoles(mg, team);
+															
+								x = (x + 1) % xCap;
+						}
 					}
-				}
+					
+					//////////////////////////////////////////////////////////////////////////////////////
+					// Now the teams are all ideologically assigned, generate roles using that information
+					
+					/**
+					for (let i in mg.teamTypes) {
+					
+						for (let j in 
+					
+					
+					**/
 				
+				}
 			
 			}
 			
@@ -757,17 +757,26 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 					for (let is = 0; is < mg.ideologySpaces.length; is++)
 					{
 						let space = mg.ideologySpaces[is]; // Get an easy ref to the space
-						
+					
 						let verts = spaceEdgesToVertices(space); // Get nice easy verts from the space
 						
 						// console.log("  Generating position in space " + JSON.stringify(space));
 						
 						// Turn the sympathySeed into a sympathy that fits the current ideology space
-						let sympathy = sympathySeed % verts.length;
+						let sympathyIndex = sympathySeed % verts.length;
 						
-						//console.log("   Sympathy for is[" + is + "] is [" + sympathy + "](" + verts[sympathy] + ") of " + JSON.stringify(verts));
+						//console.log("   Sympathy for is[" + is + "] is [" + sympathyIndex + "](" + verts[sympathyIndex] + ") of " + JSON.stringify(verts));
 						
-						newRole.sympathies[is] = verts[sympathy];
+						// Store chosen sympathy for this ideologySpace.
+						
+						// ... unless of course it's already there from another space (due to my lazy space generation ;) )
+						// ... or because it's the role's team's ideology and therefore not a "sympathy" but the role's
+						// ... primary alliegance.
+						if (!newRole.sympathies.includes(verts[sympathyIndex]) && !t.ideologicalPositions.includes(verts[sympathyIndex])) {
+							newRole.sympathies.push(verts[sympathyIndex]);
+						}
+						
+						// REFACTORING OUT: newRole.sympathies[is] = verts[sympathyIndex];
 						
 						sympathySeed++;
 					}
@@ -935,13 +944,13 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 					
 					explanations["Closed"]["Closed"] = "The number of these in the game is fixed and they can only be traded between players.";
 					explanations["Closed"]["Finite"] = "All of these start in play, and some of them will be spent with control during play, likely causing deflation of prices.";
-					explanations["Closed"]["Infinite"] = "All of these start in play, so they may become scarce or even run out entirely.";
+					explanations["Closed"]["Infinite"] = "All of these start in play, and they may become scarce or even run out entirely as they are spent.";
 					
 					explanations["Finite"]["Closed"] = "These can be earned through game mechanics, but only then traded between players, likely causing inflation of prices.";
 					
 					explanations["Finite"]["Finite"] = "These can be both earned from and spent with control in limited numbers.";
 					
-					explanations["Finite"]["Infinite"] = "These can be earned from control, and there is no limit to how many can be spent.";
+					explanations["Finite"]["Infinite"] = "These can be earned from control during play, and there is no limit to how many can be spent.";
 					
 					
 							
@@ -973,9 +982,18 @@ const ANIMALS = ["Ant", "Bear", "Eagle", "Kitten", "Lion", "Mule", "Emu", "Rat",
 					
 					for (t of tt.teams) 
 					{
-						description += "<h3>" + t.name + "</h3>";
+						let mainColour = t.colour;
+						let fontColour = "black";
+						switch (mainColour.toLowerCase()) { 
+							case "purple":
+							case "black":
+							case "blue":
+								fontColour = "white";
+						}
+					
+						description += "<h3><span style='color:" + fontColour + "; background-color:" + mainColour + "; border-color: black; border-style:solid; border-width: 1px; padding: 0px 1px 0px 1px'>" + t.name + "</span></h3>";
 						
-						description += "<p>You are a " + JSON.stringify(t.ideologicalPositions) + " organisation.</p>";
+						description += "<p>Your organisation is " + JSON.stringify(t.ideologicalPositions) + "</p>";
 						
 						for (r of t.roles)
 						{
