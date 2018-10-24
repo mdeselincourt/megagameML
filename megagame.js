@@ -673,7 +673,8 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 				
 					console.log("ids = [" + idIndex + "]");
 				
-					console.warn("WARNING - refactoring out static [0]");
+					console.warn("WARNING - still odd cases where roles don't seem to have enough sympathies");
+					console.warn("Also having a sympathy in a 2-node space doesn't make any sense.");
 				
 					var ids0 = mg.ideologySpaces[idIndex];
 					
