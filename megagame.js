@@ -674,8 +674,7 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 					console.log("ids = [" + idIndex + "]");
 				
 					console.warn("WARNING - still odd cases where roles don't seem to have enough sympathies");
-					console.warn("Also having a sympathy in a 2-node space doesn't make any sense.");
-				
+					
 					var ids0 = mg.ideologySpaces[idIndex];
 					
 					//console.log("ids0 = " + JSON.stringify(ids0));
@@ -688,7 +687,7 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 					// Save vertices length for modulo-cycling through ideologies.
 					var xCap = spaceVertices.length; // one above the max, for use in modulo operator
 					// var yCap = Math.min(4, totalTeamsCount / spaceVertices.length) // From older, mothballed implementation...
-					console.log("xCap = " + xCap);
+					// console.log("xCap = " + xCap);
 					
 					////////////////////////////////////////////////
 					// Assign all teams one of this space's vertices
@@ -757,7 +756,13 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 					
 					for (let is = 0; is < mg.ideologySpaces.length; is++)
 					{
+						
 						let space = mg.ideologySpaces[is]; // Get an easy ref to the space
+					
+						if (space.edges.length == 1) { 
+							//console.log("    Not applying sympathy because space [" + is + "] is a tracker");
+							continue;
+						}
 					
 						let verts = spaceEdgesToVertices(space); // Get nice easy verts from the space
 						
@@ -990,11 +995,29 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 							case "black":
 							case "blue":
 								fontColour = "white";
+								break;
+							case "golden":
+								mainColour = "gold";
+								break;
 						}
 					
 						description += "<h3><span style='color:" + fontColour + "; background-color:" + mainColour + "; border-color: black; border-style:solid; border-width: 1px; padding: 0px 1px 0px 1px'>" + t.name + "</span></h3>";
 						
-						description += "<p>Your organisation is " + JSON.stringify(t.ideologicalPositions) + "</p>";
+						//console.log("t.ideologicalPositions = " + JSON.stringify(t.ideologicalPositions));
+						
+						// List ideologies which under current space-building logic may not be unique.
+						description += "<p>Your organisation is ideologically " + arrayToProseList(uniqueOnly(t.ideologicalPositions)).toLowerCase() + ". ";
+						
+						switch (tt.cooperationLevel) {
+							case 1:
+								description += "You should be cooperating with the other " + tt.name.toLowerCase() + " teams (at least in theory...)";
+								break;
+							case -1:
+								description += "The other " + tt.name.toLowerCase() + " teams are your rivals or enemies (...though perhaps that doesn't rule out coming to certain agreements...)";
+								break;
+						}
+						
+						description += "</p>";
 						
 						for (r of t.roles)
 						{
@@ -1002,9 +1025,11 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 							
 							// Ah shucks these should be switch cases probably
 							
-							console.warn("Sympathies are not made nice!");
-							
-							description += "Though your primary ideology is " + t.ideologicalPositions[0] + ", you are sympathetic to " + JSON.stringify(r.sympathies) + ". ";
+							// List sympathies which under current logic should be unique??
+							if (r.sympathies.length)
+							{
+								description += "Though your primary ideology is that of your team, you have " + arrayToProseList(r.sympathies).toLowerCase() + " sympathies. ";
+							}
 							
 							if (r.selfishness == 1) { description += "You are strongly motivated by personal ambition. "; }
 							else if (r.selfishness == -1) { description += "You are passionately loyal to your team's interests. "; }
@@ -1306,6 +1331,40 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 				
 				return vertices;
 				
+			}
+			
+			function arrayToProseList(a)
+			{
+				var prose = "";
+				
+				// This is probably a really inelegant implementation but who cares
+				
+				if (!a.length) { return ""; }
+					
+				if (a.length == 1) {return a[0];}
+				
+				prose = a[a.length - 2] + " and " + a[a.length - 1]; 
+				
+				for (let i = a.length - 3; i > -1; i--) {
+					//console.log("    Working back at [" + i + "]");
+					
+					prose = a[i] + ", " + prose;
+					
+					//console.log("prose is now " + prose);
+				}
+				
+				return prose;
+			}
+			
+			function uniqueOnly(a)
+			{
+				//console.log("Array is " + JSON.stringify(a));
+
+				var b = [...new Set(a)];
+				
+				//console.log("Array made Unique is " + JSON.stringify(b));
+				
+				return b;
 			}
 			
 			// From https://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
