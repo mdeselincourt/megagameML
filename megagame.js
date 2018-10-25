@@ -793,6 +793,8 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 					// Give the role an arbitrary honesty
 					newRole.honesty = d(3)-2;
 					
+					//console.log(newRole.honesty);
+					
 					// Save completed role to array
 					t.roles.push(newRole); 
 					
@@ -994,6 +996,7 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 							case "purple":
 							case "black":
 							case "blue":
+							case "green":
 								fontColour = "white";
 								break;
 							case "golden":
@@ -1011,6 +1014,9 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 						switch (tt.cooperationLevel) {
 							case 1:
 								description += "You should be cooperating with the other " + tt.name.toLowerCase() + " teams (at least in theory...)";
+								break;
+							case 0:
+								description += "Be cautious of the other " + tt.name.toLowerCase() + " teams.";
 								break;
 							case -1:
 								description += "The other " + tt.name.toLowerCase() + " teams are your rivals or enemies (...though perhaps that doesn't rule out coming to certain agreements...)";
@@ -1032,9 +1038,9 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 							}
 							
 							if (r.selfishness == 1) { description += "You are strongly motivated by personal ambition. "; }
-							else if (r.selfishness == -1) { description += "You are passionately loyal to your team's interests. "; }
+							else if (r.selfishness == -1) { description += "You put your team's interests first. "; }
 							
-							if (r.honestly == 1) { description += "You are very principled and moral when pursuing your goals. "; }
+							if (r.honesty == 1) { description += "You prefer to be honest in dealing with others. "; }
 							else if (r.honesty == -1) { description += "You are devious and Machiavellian in pursuing your goals. "; }
 							
 							description += "</p>";
