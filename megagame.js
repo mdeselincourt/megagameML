@@ -28,7 +28,7 @@ const CORE_TEAMTYPE_DESCRIPTIONS = {
 	"Belligerent": "to win victory in armed conflict. ",
 	"Manipulator": "to influence the more conventional teams indirectly, by deception, subversion, infiltration or, as a last resort, force. ",
 	"Corporation": "to profit and to grow. ",
-	"Civil Service": "to serve their administrative or emergency civic function without undue cost in money or lives. ",
+	"Civil/Emergency Service": "to serve their administrative or emergency civic function without undue cost in money or lives. ",
 	"Criminal Band": "to do as they wish in spite of the law. ",
 	"House": "to protect and further the ambitions of their family, noble house, kinsmen, clan or vassals. "
 };
