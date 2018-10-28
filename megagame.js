@@ -214,13 +214,20 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 				
 				generateTeams(megagame); // Requires teamTypes and ideology spaces
 				
-				$("#mainContent").html(describeMegagame(megagame));
-				
 				$("#mainTitle h2").html(megagame.name);
+				
+				//$("#mainContent").html(describeMegagame(megagame));
+				
+				var descriptionDiv = document.createElement('div');
+				descriptionDiv.innerHTML = describeMegagame(megagame);
+				document.getElementById('mainContent').appendChild(descriptionDiv);
 				
 				drawCharts(megagame);
 				
 				
+				var briefingsDiv = document.createElement('div');
+				briefingsDiv.innerHTML = describeBriefings(megagame);
+				document.getElementById('mainContent').appendChild(briefingsDiv);
 				
 				outputJSON(megagame);
 			
@@ -346,15 +353,15 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 			//
 			function generateIdeologySpaces(mg, universe) {
 			
-				console.warn("Ideology space generation is not an optimal heuristic - can generate sets of trackers that would be better combined into grids or polygons.");
+				console.warn("Ideology space generation is not an optimal heuristic - can generate sets of trackers that would be better combined into grids or polygons. Repetition of nodes can also cause the current algorithm to generate self-contradictory ideologies.");
 			
 				var ideologySpaces = [];
 					
 				var bagOfEdges = pickFrom(universe["ideologicalEdges"], d(MAX_GAME_IDEOLOGIES_NUMBER));
 			
-				console.log("Assembling spaces from bag of edges:");
+				//console.log("Assembling spaces from bag of edges:");
 				
-				console.log(" " + JSON.stringify(bagOfEdges));
+				//console.log(" " + JSON.stringify(bagOfEdges));
 			
 				// Go through the bag one by one, attempting to 
 				while (bagOfEdges.length > 0) {
@@ -367,7 +374,7 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 
 						let is = buildGridSpace(bagOfEdges);
 						
-						console.log("Build 'grid' = " + JSON.stringify(is));
+						//console.log("Build 'grid' = " + JSON.stringify(is));
 
 						ideologySpaces.push(is);
 					}
@@ -376,7 +383,7 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 						// Build a polygon (if possible)
 						let is = buildPolygonSpace(bagOfEdges);
 						
-						console.log("Build 'polygon' = " + JSON.stringify(is)); 
+						//console.log("Build 'polygon' = " + JSON.stringify(is)); 
 
 						ideologySpaces.push(is);
 					}
@@ -406,7 +413,7 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 			
 			// Attempts to build a 2D space of 2 mutually exclusive edges. If it fails to find a second edge it will fall back to a tracker.
 			function buildGridSpace(bagOfEdges) {
-				console.log("buildGridSpace()");
+				//console.log("buildGridSpace()");
 				
 				var newSpace = {"geometry" : "grid"};
 				
@@ -417,17 +424,17 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 				// Check through the possible Y axes for an INDEPENDENT edge
 				for (candidateY of bagOfEdges)
 				{								
-					console.log("   Considering " + candidateY + " to oppose " + xAxis);
+					//console.log("   Considering " + candidateY + " to oppose " + xAxis);
 					
 					if(!xAxis.includes(candidateY[0]) && !xAxis.includes(candidateY[1])) 
 					{
-						console.log("  Suitable Y axis found!");
+						//console.log("  Suitable Y axis found!");
 						yAxis = candidateY;
 						break; // Stop looking
 					}
 					else
 					{
-						console.log("   edge not suitable. Next.");
+						//console.log("   edge not suitable. Next.");
 					}
 				}
 				// Handle result of search
@@ -435,32 +442,32 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 				
 				if (yAxis == null) 
 				{
-					console.log("  No independent Y axis found in remaining bag. ");
+					//console.log("  No independent Y axis found in remaining bag. ");
 					
-					console.log("   Could not make a grid; use a polygon instead (unless out of edges completely)");
+					//console.log("   Could not make a grid; use a polygon instead (unless out of edges completely)");
 					
 					// We couldn't find an independent Y axis
 					
-					console.log("    Trying a remaining-edges-in-bag-naive polygon");
+					//console.log("    Trying a remaining-edges-in-bag-naive polygon");
 					
 					yAxis = popRandomFrom(bagOfEdges);
 					
-					console.log("yAxis = " + JSON.stringify(yAxis));
+					//console.log("yAxis = " + JSON.stringify(yAxis));
 					
 					if (bagOfEdges.length == 0)
 					{
-						console.log("     There AREN'T any more axes, making a tracker.");
+						//console.log("     There AREN'T any more axes, making a tracker.");
 						newSpace = {"geometry": "tracker", "edges": [xAxis]};
 					}
 					else
 					{
-						console.log("     There's another edge; making a (order-naive) polygon");
+						//console.log("     There's another edge; making a (order-naive) polygon");
 						newSpace = {"geometry": "polygon", "edges" : [xAxis,yAxis]};
 					}
 				}
 				else
 				{
-					console.log("Completing grid with y Axis");
+					//console.log("Completing grid with y Axis");
 					// Put the chosen edges into the space
 					newSpace["edges"] = [xAxis,yAxis];
 					
@@ -472,7 +479,7 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 			}
 			
 			function buildPolygonSpace(bagOfEdges) {
-				console.log("buildPolygonSpace()");
+				//console.log("buildPolygonSpace()");
 				
 				// Try to assemble a polygon perimeter.
 				
@@ -488,42 +495,42 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 				
 				for (freeEdgeIndex = 0; freeEdgeIndex < 6; freeEdgeIndex++) {
 				
-					console.log("  Seeking edge to add to polygon after [" + freeEdgeIndex + "] of up to [5]");
+					//console.log("  Seeking edge to add to polygon after [" + freeEdgeIndex + "] of up to [5]");
 				
 					var freeEdge = newSpace["edges"][freeEdgeIndex]; // Get a reference to the free edge
 
-					console.log("   free edge is now " + freeEdge);
+					//console.log("   free edge is now " + freeEdge);
 
 					var freeNode = freeEdge[1]; // Get a reference to the free edge's free node
 					
-					console.log("  ([" + freeEdgeIndex + "] of " + newSpace["edges"].length + ")");
+					//console.log("  ([" + freeEdgeIndex + "] of " + newSpace["edges"].length + ")");
 			
 					// Keep track as we search of whether we've found what we want...
 					var nextEdgeFound = false;
 					
-					console.log("  Starting to iterate through bag of " + bagOfEdges.length + " remaining edges"); 
+					//console.log("  Starting to iterate through bag of " + bagOfEdges.length + " remaining edges"); 
 					
 					// Search each remainder in the bag for a suitable edge to add
 					for (candidateNext of bagOfEdges) {
 						
-						console.log("  Considering " + freeEdge + " <--?--< " + candidateNext + " from a bag of " + bagOfEdges.length);
+						//console.log("  Considering " + freeEdge + " <--?--< " + candidateNext + " from a bag of " + bagOfEdges.length);
 						
 						if(candidateNext.includes(freeNode)) {
 						
 							// We can add this edge; but which way around?
-							console.log("   Found a suitable edge");
+							//console.log("   Found a suitable edge");
 							
 							nextEdgeFound = true;
 							
 							if (freeNode == candidateNext[0])
 							{
-								console.log("    " + freeEdge + " <--- " + candidateNext);
+								//console.log("    " + freeEdge + " <--- " + candidateNext);
 								// Attach this the right way around
 								newSpace.edges[freeEdgeIndex+1] = candidateNext;
 							}
 							else
 							{
-								console.log("    " + freeEdge + " <--- " + candidateNext[1] + "'" + candidateNext[0]);
+								//console.log("    " + freeEdge + " <--- " + candidateNext[1] + "'" + candidateNext[0]);
 								newSpace.edges[freeEdgeIndex+1] = [candidateNext[1],candidateNext[0]];
 							}
 
@@ -536,19 +543,19 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 						}
 						else
 						{
-							console.log("   Cannot add this edge"); // Because neither of its nodes match the free node.
+							//console.log("   Cannot add this edge"); // Because neither of its nodes match the free node.
 						}
 						
 					} // End of search for a successor edge
 				
-					console.log("Finished going through bag in attempt to add edge " + freeEdgeIndex + ", nextEdgeFound = " + nextEdgeFound);
+					//console.log("Finished going through bag in attempt to add edge " + freeEdgeIndex + ", nextEdgeFound = " + nextEdgeFound);
 					
 					// We are done going through the bag, did we find anything?
 					if (nextEdgeFound == false) { break; }// Do not attempt to find another edge
 					
 				} // End of loop attempting to add another edge
 				
-				console.log("Finished space assembly, setting final properties and pushing");
+				//console.log("Finished space assembly, setting final properties and pushing");
 
 				// Complete configuring the space
 				
@@ -615,8 +622,8 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 			
 			function generateTeams(mg) {
 				
-				console.log("Generating teams into current game:");
-				console.log(JSON.stringify(mg));
+				//console.log("Generating teams into current game:");
+				//console.log(JSON.stringify(mg));
 				
 				//var briefings = "<h1>Abstract Briefings</h1>";
 				
@@ -671,10 +678,8 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 				
 				for (idIndex in mg.ideologySpaces) {
 				
-					console.log("ids = [" + idIndex + "]");
+					//console.log("ids = [" + idIndex + "]");
 				
-					console.warn("WARNING - still odd cases where roles don't seem to have enough sympathies");
-					
 					var ids0 = mg.ideologySpaces[idIndex];
 					
 					//console.log("ids0 = " + JSON.stringify(ids0));
@@ -885,11 +890,6 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 				// Describe economy
 				description += describeEconomy(mg);
 				
-				console.warn("This code organisation makes it hard to put this under the diagrams");
-				
-				// Generate briefings
-				description += describeBriefings(mg);
-				
 				return description;
 				
 			}
@@ -982,7 +982,7 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 				
 				description += "<h1>Briefings (experimental!)</h1>";
 				
-				description += "<p><i>Disclaimer: this generator lacks a real designer's historical/genre knowledge, so generated teams are arbitrary!</i></p>";
+				description += "<p><i>Disclaimer: this generator lacks the historical/genre knowledge to create a coherent theme, so generated teams are arbitrary.</i></p>";
 				
 				for (tt of mg.teamTypes) 
 				{	
@@ -1009,7 +1009,7 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 						//console.log("t.ideologicalPositions = " + JSON.stringify(t.ideologicalPositions));
 						
 						// List ideologies which under current space-building logic may not be unique.
-						description += "<p>Your organisation is ideologically " + arrayToProseList(uniqueOnly(t.ideologicalPositions)).toLowerCase() + ". ";
+						description += "<p>You are an ideologically " + arrayToProseList(uniqueOnly(t.ideologicalPositions)).toLowerCase() + " " + tt.name.toLowerCase() + " team. ";
 						
 						switch (tt.cooperationLevel) {
 							case 1:
@@ -1034,11 +1034,11 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 							// List sympathies which under current logic should be unique??
 							if (r.sympathies.length)
 							{
-								description += "Though your primary ideology is that of your team, you have " + arrayToProseList(r.sympathies).toLowerCase() + " sympathies. ";
+								description += "Though your primary ideology is " + arrayToProseList(uniqueOnly(t.ideologicalPositions)).toLowerCase() + ", you have " + arrayToProseList(r.sympathies).toLowerCase() + " sympathies. ";
 							}
 							
 							if (r.selfishness == 1) { description += "You are strongly motivated by personal ambition. "; }
-							else if (r.selfishness == -1) { description += "You put your team's interests first. "; }
+							else if (r.selfishness == -1) { description += "You put your team's interests before your own. "; }
 							
 							if (r.honesty == 1) { description += "You prefer to be honest in dealing with others. "; }
 							else if (r.honesty == -1) { description += "You are devious and Machiavellian in pursuing your goals. "; }
@@ -1176,13 +1176,13 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 			// HTML-ify the JSON and display
 			function outputJSON(mg) {
 				
-				var newHeader = document.createElement('h2');
-				newHeader.innerHTML = "MegagameML:";
+				var megagameMLHeader = document.createElement('h1');
+				megagameMLHeader.innerHTML = "MegagameML:";
 				var newPara = document.createElement('p');
 				var newPre = document.createElement('pre');
 				newPre.innerHTML = syntaxHighlight(mg);
 								
-				document.getElementById('mainContent').appendChild(newHeader); 
+				document.getElementById('mainContent').appendChild(megagameMLHeader); 
 				document.getElementById('mainContent').appendChild(newPara); 
 				newPara.appendChild(newPre);
 
