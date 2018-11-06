@@ -1,0 +1,365 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+Design by TEMPLATED
+http://templated.co
+Released for free under the Creative Commons Attribution License
+
+Name       : GrassyGreen 
+Description: A two-column, fixed-width design with dark color scheme.
+Version    : 1.0
+Released   : 20140310
+
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Megagame Generator</title>
+	<meta name="keywords" content="" />
+	<meta name="description" content="" />
+	<link href="http://fonts.googleapis.com/css?family=Raleway:400,200,500,600,700,800,300" rel="stylesheet" />
+	<link href="default.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="fonts.css" rel="stylesheet" type="text/css" media="all" />
+	<!--[if IE 6]>
+	<link href="default_ie6.css" rel="stylesheet" type="text/css" />
+	<![endif]-->
+	
+	
+	<!-- Favicons -->
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	
+</head>
+<body>
+<div id="wrapper">
+	<div id="menu-wrapper">
+		<div id="menu" class="container">
+			<ul>
+				<li><a href="index.html">Generator</a></li>
+				<li><a class="current_page_item">About</a></li>
+			</ul>
+		</div>
+		
+		<!-- end #menu --> 
+	<div id="header-wrapper">
+		<div id="header" class="container">
+			<div id="logo">
+				<h1><a href="#">Megagame Generator</a></h1>
+				<p>v1 - by Michael de Selincourt</a></p>
+			</div>
+		</div>
+	</div>
+	</div>
+	<div id="banner"></div>
+	<div id="page" class="container">
+		<div id="content">
+			<div class="title" id="mainTitle">
+				<h1 style="text-transform: none">ABOUT MegagameML</h1>
+				<!-- <span class="byline">byline...</span> -->
+			</div>
+		
+			<p>This <a href="index.html">generator</a> is based around a JSON representation of a megagame design I call megagameML. This page explains the model it uses</p>
+			
+			<h3>Example diagram</h3>
+			
+			<img src="images/ExampleModel.PNG" style="width:100%" />
+			
+			<h2>A megagameML game model</h2>
+			<p>The intrinsic properties of a game in this model are:
+				<ul>
+					<li><strong>name</strong>: of course.</li>
+					<li><strong>isFuture and isFiction</strong>: true/false. Future settings are always fiction, of course.</li>
+					<li><strong>epoch</strong>: the historical or future genre period.</li>
+					<li><strong>hasMap and openMap</strong>: Whether there is a geo/spatial map and whether it's "open" or "closed" to players</li>
+					<li><strong>mechanicalness</strong>: I use this to describe, in words, a continuum from "talking-based" games to "mechanics-based" games.</li>
+					<li><strong>mood</strong>: I use this to record a continuum from comedic and  light-hearted (e.g. pirates!) to sombre (appropriate in e.g. games featuring WW2)</li>
+				</ul>
+			</p>
+			
+			<p>In megagameML this information might look like this:
+			
+				<pre>
+	{
+		"name": "Watch the Thunder",
+		"isFuture": false,
+		"isFiction": false,
+		"epoch": "Early Modern",
+		"hasMap": true,
+		"openMap": true,
+		"mechanicalness": political,
+		"mood": comedic
+		...
+	}
+				</pre>
+			</p>
+			
+			<h3>Fora</h3>
+			
+			<p>I use the term "fora" (pedant-speak for 'forums') to describe a simple list of channels of player interaction. The best-known fora are probably those in Watch the Skies: the UN forum, the scientific community forum, and the military map. Other examples include policy and cabinet from AVBC, or the Colony Council legislative assembly in Infinite Horizons. My generator is quite simple and currently assumes that there is always exactly one player per forum on every team.</p>
+			
+			<p>In megagameML this information might look like this:
+				<pre>
+	...
+		"fora": [
+			"Leadership",
+			"Political",
+			"Scientific",
+			"Diplomatic"
+		]
+	...
+	</pre>
+			</p>
+			
+			<h3>Ideology spaces</h3>
+			<p>Many megagame designs seem to create relationships between teams and players by distributing them amongst a number of types that I describe in general as 'ideologies'. Examples in my experience are A Very British Civil War, in which Fascist, Left-wing, Royalist and Church factions are at war; and a Very British Coup, which breaks the Labour government into six factions with differing economic and social ideologies.</p>
+			
+			<p>Because the ideologies are useful only in terms of their relationships to OTHER ideologies, I work with edges (pairs of comparable ideologies) rather than nodes (individual ideologies.)</p>
+			
+			<h4>geometry: polygon</h4>
+			<img src="images/ExampleIdeologyPolygon.PNG" style="width:200px"/>
+						
+			<p>My most general model of an ideology space is an ideology 'polygon'. The simplest non-empty 'polygon' is actually a single edge (e.g. "Liberal-Conservative" or "Calmness-Terror") which I refer to by the special name of "tracker."</p>
+			
+			<p>Two edges (e.g. Conservative-Liberal and Liberal-Radical) imply a third edge (e.g. Conservative-Radical) and create a triangle, and so on. In this "polygon" model, the edges are NOT independent. For example, in ABVC, you cannot make policy highly Traditional without it ceasing to be Liberal and Radical.</p>
+			
+			<p>My generator has a very limited understanding of ideology, which can lead to quite unintuitive layouts when the number of edges is high.</p>
+			
+			<p>
+			In megagameML this might look like this:
+				<pre>
+	...
+		"ideologySpaces": [
+			{
+				"geometry": "tracker",
+				"edges": [
+					["Calmness", "Terror"]
+				]
+				"score": true
+			},
+			{
+				"geometry": "polygon",
+				"edges": [
+					["Industrial", "Financial"],
+					["Financial", "Scientific"] 
+					// My generator leaves the final edge of a polygon
+					// implicit for technical reasons
+				],
+				"score": true
+			}
+		]
+	...
+				</pre>
+			</p>
+			
+			<h4>geometry: grid</h4>
+			<img src="images/ExampleIdeologyGrid.PNG" style="width:250px"/>
+
+			<p>One of the most common models for ideology in games is to use two INDEPENDENT edges as the axes of a 2D graph. I call this a 'grid', but in strict theoretical terms, because the two axes are independent, it is simply two "trackers" displayed on a shared 2D diagram.</p> 
+			
+			<p>In megagameML this might look like this:
+			<pre>
+		...
+			{
+				"geometry": "grid",
+				"edges": [
+					["Fascist", "Leftist"],
+					["Church", "Royalist"]
+					// Independent edges: a 2D graph
+				],
+				"score": true
+			}
+		...
+		</pre>
+			</p>
+			
+		
+			<h4>score</h4>
+			
+			<p>Though the generator does not currently use this information in the briefings, I also define whether each space "scores", in which case it is used to measure success or failure (e.g. a terror track) or not, in which case it is simply there to inform the players of the team's motives.</p>
+			
+		<h3>Resources</h3>
+		
+		<p>Resources is my general term for ownable assets, from gold dubloons to "influence cards."</p>
+		
+		<p>My generator has four types of resource:
+			<ul>
+				<li><strong>Currency</strong>: dollars, gold dubloons, credits,</li>
+				<li><strong>Influence</strong>: political capital used e.g. in formal votes</li>
+				<li><strong>Knowledge</strong>: assumed to be technology discoveries, but could be e.g. consumable "blueprints"</li>
+				<li><strong>Commodities</strong>: ammunition, food, coal, steel, unobtanium, antimatter...</li>
+			</ul>
+		</p>
+		
+		<p>Any complete and playable design would require numbers and distributions of denominations (e.g. "there each team gets 3 cards, most cards are worth 2 but some are worth 1 or 3") but my generator is currently only interested in what I call the "dynamics". It models whether the player economy for this resource is a closed system, and if not, whether it is likely to be stable, flooded (likely causing devaluation and the inflation of prices) or drained (likely causing strengthening and the deflation of prices.)</p>
+		
+		<p>In megagameML this might look like this:
+			<pre>
+	...
+		"resources": [
+			{
+				"type": "Commodities",
+				"form": "Cards",
+				"inputDynamic": "Finite",
+				"outputDynamic": "Infinite"
+			}
+			...
+		]
+	...
+		</pre>
+			</p>
+		
+		<h3>Team Types</h3>
+		
+		<p>Team types exist to model e.g. the nations and the aliens of Watch the Skies, or the Factions, Corporations and Council of Infinite Horizons, where teams have fundamentally different natures or gameplay.</p>
+		
+		<p>The types I have built into the generator to try to cover what I see in most megagames are:
+			<ul>
+				<li><strong>Sovereign Nation</strong></li>
+				<li><strong>Manipulator</strong>: to represent teams like an alien conclave who pull strings but dislike total war</li>
+				<li><strong>Belligerent</strong>: to model sides in a megawargame</li>
+				<li><strong>Corporation</strong></li>
+				<li><strong>Legislative</strong>: as played in A Very British Coup, or the Niwa Colony Council</li>
+				<li><strong>Political Opposition</strong>: politicians who are not in power, again, as in AVBC</li>
+				<li><strong>Criminal Band</strong>: pirates, gangsters, cyber-mercenaries etc.</li>				
+				<li><strong>Civil/Emergency Service</strong>: emergency services in the style of "Urban Nightmare", or Paul Howarth's hospital simulation</li>
+				<li><strong>House</strong>: perhaps an Everybody Dies-type noble house, an ancient tribe or the Duchy of Caladan</li>
+			</ul>
+		</p>
+				
+		<p>Team types assigned a level of cooperation within that type. This models the potential for e.g. emergency services that see each other as rivals, or a wargame in which the player teams are allied.</p>
+		
+		<p>Teams themselves are assigned positions within the generated ideological spaces. The way the generator does this could probably be improved, but the model is clear enough.</p>
+		
+		<p>
+		
+		<pre>
+	...
+		
+		{
+		  "name": "Team Black Ox",
+		  "colour": "Black",
+		  "ideologicalPositions": [
+			"Communist",
+			"Liberal"
+		  ],
+		  "roles": [
+			...
+		  ]
+		}
+	...
+	</pre>
+		
+		<p>My generator does not attempt to invent coherent historical/fictional theme, but it does model the typical Megagame design of distributing motives evently around the players to maximise interesting interactions.</p>
+		
+		<p>Teams are distributed fairly evenly around the ideologies in the game. Player roles are assumed always to support their team's ideology, but are also given sympathies for <i>other</i> ideologies. This technique was used in A Very British Civil War to divide each faction into four teams with shared principles but conflicting priorities.</p>
+		
+		<p>Finally, the generator distributes selfishness and honesty values amongst the player roles.</p>
+		
+		<p>In MegagameML this might look like this:</p>
+		
+		<pre>
+	...
+		"roles": [
+			{
+			  "job": "Scientific",
+			  "sympathies": [
+				"Pacifist"
+			  ],
+			  "selfishness": -1,
+			  "honesty": 0
+			},
+			{
+			  "job": "Political",
+			  "sympathies": [
+				"Fascist"
+			  ],
+			  "selfishness": 1,
+			  "honesty": -1
+			}
+		 ]
+	...
+	</pre>
+		
+		
+
+		</div>
+		<div id="sidebar">
+			<div class="box2">
+				<div class="title">
+					<h2>What is this?</h2>
+				</div>
+					<p>Let's start with what it's not: it's not attempting to replace or ridicule megagame designers!</p><p>It's an intellectual exercise (to attempt a formalisation of Megagame design), an entertainment, and perhaps one day an inspiration for someone.</p>
+					<p>The generated specs are intentionally somewhat abstract - for them to be playable a human designer would need to invent and overlay a theme that explained the rules.</p>
+					<p>It's certainly not 'finished' - for example it still often generates self-contradictory ideologies - but ProcJam 2018 is over so it's time to release v1!</p>
+					<p>Suggestions for fixes and improvements are very welcome on Megagame Definers (below)</p>
+				<div>
+					<h2>Inspirations</h2>
+				</div>
+				<ul class="style2">
+					<li><a href="http://www.megagame-makers.org.uk/">Megagame Makers</a></li>
+					<li><a href="https://www.stonepaperscissors.co.uk/">Jim Wallman & Rock Paper Scissors</a></li>
+					<li><a href="https://www.penninemegagames.co.uk/">Pennine Megagames</a></li>
+					<li><a href="https://www.horizonmegagames.com/">Horizon Megagames</a></li>
+					<li><a href="http://www.procjam.com/">PROCJAM</a></li>
+					<li><a href="https://www.facebook.com/groups/2241849549381275/">Megagame Definers on Facebook</a></li>
+					<li>All the other megagame groups)</li>
+					<li><a href="https://www.beckybeckyblogs.com/tag/megagames/">BeckyBecky Blogs Megagames</a></li>
+					<li>You may also like: <a href="https://mdeselincourt.github.io/metricgames/">Metricgames</a></li>
+				</ul>
+			</div>
+		</div>
+		
+	</div>
+</div>
+	
+<!--
+<div id="footer-wrapper">
+	<div id="footer" class="container">
+		<div id="box1">
+			<div class="title">
+				<h2>Latest Post</h2>
+			</div>
+			<ul class="style1">
+				<li><a href="#">Semper mod quis eget mi dolore</a></li>
+				<li><a href="#">Quam turpis feugiat sit dolor</a></li>
+				<li><a href="#">Amet ornare in hendrerit in lectus</a></li>
+				<li><a href="#">Consequat etiam lorem phasellus</a></li>
+				<li><a href="#">Amet turpis, feugiat et sit amet</a></li>
+				<li><a href="#">Semper mod quisturpis nisi</a></li>
+			</ul>
+		</div>
+		<div id="box2">
+			<div class="title">
+				<h2>Popular Links</h2>
+			</div>
+			<ul class="style1">
+				<li><a href="#">Semper mod quis eget mi dolore</a></li>
+				<li><a href="#">Quam turpis feugiat sit dolor</a></li>
+				<li><a href="#">Amet ornare in hendrerit in lectus</a></li>
+				<li><a href="#">Consequat etiam lorem phasellus</a></li>
+				<li><a href="#">Amet turpis, feugiat et sit amet</a></li>
+				<li><a href="#">Semper mod quisturpis nisi</a></li>
+			</ul>
+		</div>
+		<div id="box3">
+			<div class="title">
+				<h2>Follow Us</h2>
+			</div>
+			<p>Proin eu wisi suscipit nulla suscipit interdum. Aenean lectus lorem, imperdiet magna.</p>
+			<ul class="contact">
+				<li><a href="#" class="icon icon-twitter"><span>Twitter</span></a></li>
+				<li><a href="#" class="icon icon-facebook"><span>Facebook</span></a></li>
+				<li><a href="#" class="icon icon-dribbble"><span>Dribbble</span></a></li>
+				<li><a href="#" class="icon icon-tumblr"><span>Tumblr</span></a></li>
+				<li><a href="#" class="icon icon-rss"><span>Pinterest</span></a></li>
+			</ul>
+				<a href="#" class="button">Read More</a> </div>
+		</div>
+	</div>
+</div>
+-->
+
+<div id="copyright" class="container">
+	<p>Project source at <a href = "https://github.com/mdeselincourt/megagameML">https://github.com/mdeselincourt/megagameML</a> | Template design by <a href="http://templated.co" rel="nofollow">TEMPLATED</a>.</p>
+</div>
+</body>
+</html>

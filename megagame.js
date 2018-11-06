@@ -954,7 +954,7 @@ const ANIMALS = ["Ant 🐜", "Bear 🐻", "Eagle 🦅", "Kitten 🐱", "Lion �
 					explanations["Closed"]["Finite"] = "All of these start in play, and some of them will be spent with control during play, likely causing deflation of prices.";
 					explanations["Closed"]["Infinite"] = "All of these start in play, and they may become scarce or even run out entirely as they are spent.";
 					
-					explanations["Finite"]["Closed"] = "These can be earned through game mechanics, but only then traded between players, likely causing inflation of prices.";
+					explanations["Finite"]["Closed"] = "These can be earned through game mechanics, but then only traded between players, likely causing inflation of prices.";
 					
 					explanations["Finite"]["Finite"] = "These can be both earned from and spent with control in limited numbers.";
 					
